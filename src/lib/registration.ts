@@ -12,11 +12,14 @@ export interface RegistrationPayload {
   surat_delegasi_file: { name: string; type: string; data: string } | null;
   bukti_pembayaran_file: { name: string; type: string; data: string } | null;
   agreement: boolean;
+  website: string;
   source: string;
   user_agent: string;
 }
 
-export async function submitRegistration(payload: RegistrationPayload): Promise<{ registration_id?: string }> {
+export async function submitRegistration(
+  payload: RegistrationPayload,
+): Promise<{ registration_id?: string }> {
   const API_URL = import.meta.env.VITE_GAS_ENDPOINT as string | undefined;
   if (!API_URL) {
     // Placeholder fallback: generate a local mock id so flow can be tested before GAS is wired up.
@@ -25,11 +28,13 @@ export async function submitRegistration(payload: RegistrationPayload): Promise<
   }
   const res = await fetch(API_URL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "text/plain;charset=UTF-8" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error("Gagal mengirim pendaftaran");
-  return res.json();
+  const body = (await res.json()) as { ok?: boolean; registration_id?: string; error?: string };
+  if (!body.ok) throw new Error(body.error || "Gagal mengirim pendaftaran");
+  return body;
 }
 
 export function fileToBase64(file: File): Promise<{ name: string; type: string; data: string }> {

@@ -1,7 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Loader2, Upload, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Upload,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { submitRegistration, fileToBase64 } from "@/lib/registration";
@@ -33,20 +40,36 @@ type FormState = {
   surat_delegasi_file: File | null;
   bukti_pembayaran_file: File | null;
   agreement: boolean;
+  website: string;
 };
 
 const STEPS = ["Identitas", "Kemampuan", "Pengalaman", "Berkas", "Persetujuan"];
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
 const initial: FormState = {
-  nama: "", asal_pesantren: "", alamat_pesantren: "", whatsapp: "",
-  kemampuan: "", tingkat_kemampuan: "",
-  pengalaman_produksi: "", kendala_produksi: "", motivasi: "",
-  link_karya: "", surat_delegasi_file: null, bukti_pembayaran_file: null,
+  nama: "",
+  asal_pesantren: "",
+  alamat_pesantren: "",
+  whatsapp: "",
+  kemampuan: "",
+  tingkat_kemampuan: "",
+  pengalaman_produksi: "",
+  kendala_produksi: "",
+  motivasi: "",
+  link_karya: "",
+  surat_delegasi_file: null,
+  bukti_pembayaran_file: null,
   agreement: false,
+  website: "",
 };
 
 function isUrl(s: string) {
-  try { new URL(s); return true; } catch { return false; }
+  try {
+    new URL(s);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function DaftarPage() {
@@ -76,14 +99,20 @@ function DaftarPage() {
       if (!data.tingkat_kemampuan) e.tingkat_kemampuan = "Pilih tingkat kemampuan";
     }
     if (s === 2) {
-      if (data.pengalaman_produksi.trim().length < 50) e.pengalaman_produksi = "Minimal 50 karakter";
+      if (data.pengalaman_produksi.trim().length < 50)
+        e.pengalaman_produksi = "Minimal 50 karakter";
       if (data.kendala_produksi.trim().length < 30) e.kendala_produksi = "Minimal 30 karakter";
       if (data.motivasi.trim().length < 50) e.motivasi = "Minimal 50 karakter";
     }
     if (s === 3) {
-      if (!data.link_karya.trim() || !isUrl(data.link_karya)) e.link_karya = "Harus berupa URL valid";
+      if (!data.link_karya.trim() || !isUrl(data.link_karya))
+        e.link_karya = "Harus berupa URL valid";
       if (!data.surat_delegasi_file) e.surat_delegasi_file = "File surat delegasi wajib";
+      else if (data.surat_delegasi_file.size > MAX_FILE_SIZE)
+        e.surat_delegasi_file = "Ukuran file maksimal 5 MB";
       if (!data.bukti_pembayaran_file) e.bukti_pembayaran_file = "File bukti pembayaran wajib";
+      else if (data.bukti_pembayaran_file.size > MAX_FILE_SIZE)
+        e.bukti_pembayaran_file = "Ukuran file maksimal 5 MB";
     }
     if (s === 4) {
       if (!data.agreement) e.agreement = "Wajib menyetujui ketentuan";
@@ -99,7 +128,9 @@ function DaftarPage() {
     try {
       const [surat, bukti] = await Promise.all([
         data.surat_delegasi_file ? fileToBase64(data.surat_delegasi_file) : Promise.resolve(null),
-        data.bukti_pembayaran_file ? fileToBase64(data.bukti_pembayaran_file) : Promise.resolve(null),
+        data.bukti_pembayaran_file
+          ? fileToBase64(data.bukti_pembayaran_file)
+          : Promise.resolve(null),
       ]);
       const res = await submitRegistration({
         nama: data.nama.trim(),
@@ -115,6 +146,7 @@ function DaftarPage() {
         surat_delegasi_file: surat,
         bukti_pembayaran_file: bukti,
         agreement: data.agreement,
+        website: data.website,
         source: "kemahfilm.mediapondokjatim.id",
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       });
@@ -131,7 +163,9 @@ function DaftarPage() {
     if (step < STEPS.length - 1) setStep(step + 1);
     else handleSubmit();
   }
-  function prev() { if (step > 0) setStep(step - 1); }
+  function prev() {
+    if (step > 0) setStep(step - 1);
+  }
 
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -140,10 +174,15 @@ function DaftarPage() {
       <SiteHeader />
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10 sm:py-14">
         <div className="mb-6">
-          <Link to="/" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+          <Link
+            to="/"
+            className="text-sm text-muted-foreground hover:text-primary inline-flex items-center gap-1"
+          >
             <ChevronLeft className="h-4 w-4" /> Beranda
           </Link>
-          <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-primary-dark">Pendaftaran Peserta</h1>
+          <h1 className="mt-3 text-3xl sm:text-4xl font-bold text-primary-dark">
+            Pendaftaran Peserta
+          </h1>
           <p className="mt-2 text-muted-foreground">
             Lengkapi {STEPS.length} langkah berikut. Estimasi 5–7 menit.
           </p>
@@ -152,7 +191,9 @@ function DaftarPage() {
         {/* Progress */}
         <div className="mb-8">
           <div className="flex justify-between text-xs font-semibold text-muted-foreground mb-2">
-            <span>Langkah {step + 1} dari {STEPS.length}</span>
+            <span>
+              Langkah {step + 1} dari {STEPS.length}
+            </span>
             <span className="text-primary">{STEPS[step]}</span>
           </div>
           <div className="h-2 rounded-full bg-secondary overflow-hidden">
@@ -166,6 +207,16 @@ function DaftarPage() {
         </div>
 
         <div className="rounded-3xl bg-card p-6 sm:p-8 shadow-card border border-border/40">
+          <input
+            type="text"
+            name="website"
+            value={data.website}
+            onChange={(e) => update("website", e.target.value)}
+            className="hidden"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
           <AnimatePresence mode="wait">
             <motion.div
               key={step}
@@ -179,16 +230,43 @@ function DaftarPage() {
                 <>
                   <h2 className="text-lg font-bold text-primary-dark">Identitas Peserta</h2>
                   <Field label="Nama Lengkap" error={errors.nama}>
-                    <input className={inputCls(errors.nama)} value={data.nama} onChange={(e) => update("nama", e.target.value)} placeholder="Nama sesuai KTP/identitas" />
+                    <input
+                      className={inputCls(errors.nama)}
+                      value={data.nama}
+                      onChange={(e) => update("nama", e.target.value)}
+                      placeholder="Nama sesuai KTP/identitas"
+                    />
                   </Field>
                   <Field label="Asal Pesantren" error={errors.asal_pesantren}>
-                    <input className={inputCls(errors.asal_pesantren)} value={data.asal_pesantren} onChange={(e) => update("asal_pesantren", e.target.value)} placeholder="Contoh: PP. Lirboyo" />
+                    <input
+                      className={inputCls(errors.asal_pesantren)}
+                      value={data.asal_pesantren}
+                      onChange={(e) => update("asal_pesantren", e.target.value)}
+                      placeholder="Contoh: PP. Lirboyo"
+                    />
                   </Field>
                   <Field label="Alamat Pesantren" error={errors.alamat_pesantren}>
-                    <textarea rows={2} className={inputCls(errors.alamat_pesantren)} value={data.alamat_pesantren} onChange={(e) => update("alamat_pesantren", e.target.value)} placeholder="Alamat lengkap pesantren" />
+                    <textarea
+                      rows={2}
+                      className={inputCls(errors.alamat_pesantren)}
+                      value={data.alamat_pesantren}
+                      onChange={(e) => update("alamat_pesantren", e.target.value)}
+                      placeholder="Alamat lengkap pesantren"
+                    />
                   </Field>
-                  <Field label="Nomor WhatsApp Aktif" error={errors.whatsapp} hint="Minimal 10 digit, contoh: 081234567890">
-                    <input type="tel" inputMode="numeric" className={inputCls(errors.whatsapp)} value={data.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} placeholder="08xxxxxxxxxx" />
+                  <Field
+                    label="Nomor WhatsApp Aktif"
+                    error={errors.whatsapp}
+                    hint="Minimal 10 digit, contoh: 081234567890"
+                  >
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      className={inputCls(errors.whatsapp)}
+                      value={data.whatsapp}
+                      onChange={(e) => update("whatsapp", e.target.value)}
+                      placeholder="08xxxxxxxxxx"
+                    />
                   </Field>
                 </>
               )}
@@ -199,7 +277,12 @@ function DaftarPage() {
                   <Field label="Di mana kemampuanmu?" error={errors.kemampuan}>
                     <div className="grid gap-2">
                       {["Sutradara & Script Writer", "DOP & Editor", "Keduanya"].map((o) => (
-                        <RadioCard key={o} label={o} checked={data.kemampuan === o} onChange={() => update("kemampuan", o)} />
+                        <RadioCard
+                          key={o}
+                          label={o}
+                          checked={data.kemampuan === o}
+                          onChange={() => update("kemampuan", o)}
+                        />
                       ))}
                     </div>
                   </Field>
@@ -232,21 +315,39 @@ function DaftarPage() {
                     error={errors.pengalaman_produksi}
                     hint={`${data.pengalaman_produksi.length}/min. 50 karakter`}
                   >
-                    <textarea rows={4} className={inputCls(errors.pengalaman_produksi)} value={data.pengalaman_produksi} onChange={(e) => update("pengalaman_produksi", e.target.value)} placeholder="Ceritakan project, peran, dan hasilnya..." />
+                    <textarea
+                      rows={4}
+                      className={inputCls(errors.pengalaman_produksi)}
+                      value={data.pengalaman_produksi}
+                      onChange={(e) => update("pengalaman_produksi", e.target.value)}
+                      placeholder="Ceritakan project, peran, dan hasilnya..."
+                    />
                   </Field>
                   <Field
                     label="Kendala yang sering kamu hadapi saat produksi film"
                     error={errors.kendala_produksi}
                     hint={`${data.kendala_produksi.length}/min. 30 karakter`}
                   >
-                    <textarea rows={3} className={inputCls(errors.kendala_produksi)} value={data.kendala_produksi} onChange={(e) => update("kendala_produksi", e.target.value)} placeholder="Misal: keterbatasan alat, tim, ide, dsb." />
+                    <textarea
+                      rows={3}
+                      className={inputCls(errors.kendala_produksi)}
+                      value={data.kendala_produksi}
+                      onChange={(e) => update("kendala_produksi", e.target.value)}
+                      placeholder="Misal: keterbatasan alat, tim, ide, dsb."
+                    />
                   </Field>
                   <Field
                     label="Motivasi mengikuti Kemah Film MPJ 2026"
                     error={errors.motivasi}
                     hint={`${data.motivasi.length}/min. 50 karakter`}
                   >
-                    <textarea rows={4} className={inputCls(errors.motivasi)} value={data.motivasi} onChange={(e) => update("motivasi", e.target.value)} placeholder="Apa yang ingin kamu pelajari dan capai?" />
+                    <textarea
+                      rows={4}
+                      className={inputCls(errors.motivasi)}
+                      value={data.motivasi}
+                      onChange={(e) => update("motivasi", e.target.value)}
+                      placeholder="Apa yang ingin kamu pelajari dan capai?"
+                    />
                   </Field>
                 </>
               )}
@@ -259,7 +360,13 @@ function DaftarPage() {
                     error={errors.link_karya}
                     hint="YouTube, Instagram, TikTok, Google Drive, dll. Pastikan link dapat diakses panitia."
                   >
-                    <input type="url" className={inputCls(errors.link_karya)} value={data.link_karya} onChange={(e) => update("link_karya", e.target.value)} placeholder="https://..." />
+                    <input
+                      type="url"
+                      className={inputCls(errors.link_karya)}
+                      value={data.link_karya}
+                      onChange={(e) => update("link_karya", e.target.value)}
+                      placeholder="https://..."
+                    />
                   </Field>
                   <FileField
                     label="Surat delegasi dari media/pesantren"
@@ -284,15 +391,20 @@ function DaftarPage() {
                 <>
                   <h2 className="text-lg font-bold text-primary-dark">Persetujuan</h2>
                   <div className="rounded-2xl bg-secondary p-5 text-sm text-foreground/85 leading-relaxed">
-                    Dengan submit form ini, saya menyatakan telah memahami segala aturan dan ketentuan pelaksanaan kegiatan
-                    <strong> Kemah Film MPJ 2026</strong> serta siap mengikuti seluruh rangkaian kegiatan
-                    mulai dari Technical Meeting hingga penutupan. Saya juga siap menerima sanksi atau punishment dari
-                    panitia penyelenggara apabila melanggar segala bentuk aturan dan ketentuan kegiatan
-                    Kemah Film MPJ 2026.
+                    Dengan submit form ini, saya menyatakan telah memahami segala aturan dan
+                    ketentuan pelaksanaan kegiatan
+                    <strong> Kemah Film MPJ 2026</strong> serta siap mengikuti seluruh rangkaian
+                    kegiatan mulai dari Technical Meeting hingga penutupan. Saya juga siap menerima
+                    sanksi atau punishment dari panitia penyelenggara apabila melanggar segala
+                    bentuk aturan dan ketentuan kegiatan Kemah Film MPJ 2026.
                   </div>
-                  <label className={`flex gap-3 items-start rounded-2xl border-2 p-4 cursor-pointer transition ${
-                    data.agreement ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
-                  }`}>
+                  <label
+                    className={`flex gap-3 items-start rounded-2xl border-2 p-4 cursor-pointer transition ${
+                      data.agreement
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/40"
+                    }`}
+                  >
                     <input
                       type="checkbox"
                       checked={data.agreement}
@@ -304,7 +416,9 @@ function DaftarPage() {
                     </span>
                   </label>
                   {errors.agreement && (
-                    <p className="text-sm text-destructive flex items-center gap-1"><AlertCircle className="h-4 w-4" /> {errors.agreement}</p>
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" /> {errors.agreement}
+                    </p>
                   )}
                   {submitError && (
                     <div className="rounded-xl bg-destructive/10 border border-destructive/30 p-3 text-sm text-destructive flex gap-2">
@@ -334,11 +448,17 @@ function DaftarPage() {
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-bold text-primary-foreground shadow-soft hover:bg-primary-dark transition disabled:opacity-60"
             >
               {submitting ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Mengirim...</>
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Mengirim...
+                </>
               ) : step === STEPS.length - 1 ? (
-                <><CheckCircle2 className="h-4 w-4" /> Kirim Pendaftaran</>
+                <>
+                  <CheckCircle2 className="h-4 w-4" /> Kirim Pendaftaran
+                </>
               ) : (
-                <>Lanjut <ChevronRight className="h-4 w-4" /></>
+                <>
+                  Lanjut <ChevronRight className="h-4 w-4" />
+                </>
               )}
             </button>
           </div>
@@ -355,13 +475,27 @@ function inputCls(error?: string) {
   }`;
 }
 
-function Field({ label, error, hint, children }: { label: string; error?: string; hint?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  error,
+  hint,
+  children,
+}: {
+  label: string;
+  error?: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-foreground mb-1.5">{label} <span className="text-destructive">*</span></label>
+      <label className="block text-sm font-semibold text-foreground mb-1.5">
+        {label} <span className="text-destructive">*</span>
+      </label>
       {children}
       {error ? (
-        <p className="mt-1.5 text-xs text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {error}</p>
+        <p className="mt-1.5 text-xs text-destructive flex items-center gap-1">
+          <AlertCircle className="h-3 w-3" /> {error}
+        </p>
       ) : hint ? (
         <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>
       ) : null}
@@ -369,17 +503,29 @@ function Field({ label, error, hint, children }: { label: string; error?: string
   );
 }
 
-function RadioCard({ label, checked, onChange }: { label: string; checked: boolean; onChange: () => void }) {
+function RadioCard({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: () => void;
+}) {
   return (
     <button
       type="button"
       onClick={onChange}
       className={`text-left rounded-xl border-2 px-4 py-3 text-sm font-medium transition flex items-center justify-between ${
-        checked ? "border-primary bg-primary/5 text-primary-dark" : "border-border bg-card hover:border-primary/40"
+        checked
+          ? "border-primary bg-primary/5 text-primary-dark"
+          : "border-border bg-card hover:border-primary/40"
       }`}
     >
       <span>{label}</span>
-      <span className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${checked ? "border-primary" : "border-border"}`}>
+      <span
+        className={`h-5 w-5 rounded-full border-2 flex items-center justify-center ${checked ? "border-primary" : "border-border"}`}
+      >
         {checked && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
       </span>
     </button>
@@ -387,15 +533,28 @@ function RadioCard({ label, checked, onChange }: { label: string; checked: boole
 }
 
 function FileField({
-  label, hint, file, onChange, error, accept,
+  label,
+  hint,
+  file,
+  onChange,
+  error,
+  accept,
 }: {
-  label: string; hint?: string; file: File | null; error?: string; accept: string;
+  label: string;
+  hint?: string;
+  file: File | null;
+  error?: string;
+  accept: string;
   onChange: (f: File | null) => void;
 }) {
   return (
     <div>
-      <label className="block text-sm font-semibold text-foreground mb-1.5">{label} <span className="text-destructive">*</span></label>
-      <label className={`flex items-center gap-3 rounded-xl border-2 border-dashed bg-secondary/40 px-4 py-4 cursor-pointer hover:bg-secondary transition ${error ? "border-destructive/60" : "border-border"}`}>
+      <label className="block text-sm font-semibold text-foreground mb-1.5">
+        {label} <span className="text-destructive">*</span>
+      </label>
+      <label
+        className={`flex items-center gap-3 rounded-xl border-2 border-dashed bg-secondary/40 px-4 py-4 cursor-pointer hover:bg-secondary transition ${error ? "border-destructive/60" : "border-border"}`}
+      >
         <div className="h-10 w-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
           <Upload className="h-5 w-5" />
         </div>
@@ -403,7 +562,9 @@ function FileField({
           {file ? (
             <>
               <p className="text-sm font-medium text-foreground truncate">{file.name}</p>
-              <p className="text-xs text-muted-foreground">{(file.size / 1024).toFixed(0)} KB · klik untuk ganti</p>
+              <p className="text-xs text-muted-foreground">
+                {(file.size / 1024).toFixed(0)} KB · klik untuk ganti
+              </p>
             </>
           ) : (
             <>
@@ -419,7 +580,11 @@ function FileField({
           onChange={(e) => onChange(e.target.files?.[0] ?? null)}
         />
       </label>
-      {error && <p className="mt-1.5 text-xs text-destructive flex items-center gap-1"><AlertCircle className="h-3 w-3" /> {error}</p>}
+      {error && (
+        <p className="mt-1.5 text-xs text-destructive flex items-center gap-1">
+          <AlertCircle className="h-3 w-3" /> {error}
+        </p>
+      )}
     </div>
   );
 }

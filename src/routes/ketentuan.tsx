@@ -18,14 +18,35 @@ export const Route = createFileRoute("/ketentuan")({
 });
 
 const items = [
-  { title: "Pendaftaran", desc: "Mengisi formulir resmi dan melengkapi seluruh data dengan benar." },
+  {
+    title: "Pendaftaran",
+    desc: "Mengisi formulir resmi dan melengkapi seluruh data dengan benar.",
+  },
   { title: "Bukti Pembayaran", desc: "Mengunggah bukti pembayaran sesuai gelombang yang berlaku." },
-  { title: "Portofolio", desc: "Mengirim link karya orisinil sesuai bidang kemampuan (publik & dapat diakses panitia)." },
-  { title: "Surat Delegasi", desc: "Mengunggah surat delegasi resmi dari media/pesantren (PDF/JPG/PNG)." },
-  { title: "Technical Meeting", desc: "Wajib mengikuti technical meeting sebelum kegiatan dimulai." },
-  { title: "Perlengkapan", desc: "Membawa perlengkapan pribadi (ibadah, pakaian, obat) dan perlengkapan produksi kelompok." },
-  { title: "Kedisiplinan", desc: "Mengikuti seluruh rangkaian kegiatan dari pembukaan hingga penutupan." },
-  { title: "Refund", desc: "Biaya pendaftaran tidak dapat dikembalikan kecuali kegiatan dibatalkan panitia." },
+  {
+    title: "Portofolio",
+    desc: "Mengirim link karya orisinil sesuai bidang kemampuan (publik & dapat diakses panitia).",
+  },
+  {
+    title: "Surat Delegasi",
+    desc: "Mengunggah surat delegasi resmi dari media/pesantren (PDF/JPG/PNG).",
+  },
+  {
+    title: "Technical Meeting",
+    desc: "Wajib mengikuti technical meeting sebelum kegiatan dimulai.",
+  },
+  {
+    title: "Perlengkapan",
+    desc: "Membawa perlengkapan pribadi (ibadah, pakaian, obat) dan perlengkapan produksi kelompok.",
+  },
+  {
+    title: "Kedisiplinan",
+    desc: "Mengikuti seluruh rangkaian kegiatan dari pembukaan hingga penutupan.",
+  },
+  {
+    title: "Refund",
+    desc: "Biaya pendaftaran tidak dapat dikembalikan kecuali kegiatan dibatalkan panitia.",
+  },
 ];
 
 function KetentuanPage() {
@@ -39,7 +60,10 @@ function KetentuanPage() {
       >
         <div className="grid sm:grid-cols-2 gap-4">
           {items.map((it) => (
-            <div key={it.title} className="rounded-2xl bg-card p-6 shadow-card border border-border/40">
+            <div
+              key={it.title}
+              className="rounded-2xl bg-card p-6 shadow-card border border-border/40"
+            >
               <div className="flex gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                 <div>

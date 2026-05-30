@@ -43,9 +43,8 @@ function SuksesPage() {
             Pendaftaran Berhasil Dikirim
           </h1>
           <p className="mt-3 text-muted-foreground leading-relaxed">
-            Data dan berkas kamu telah diterima oleh panitia Kemah Film MPJ 2026.
-            Panitia akan melakukan verifikasi dan menghubungi kamu melalui WhatsApp
-            aktif yang telah didaftarkan.
+            Data dan berkas kamu telah diterima oleh panitia Kemah Film MPJ 2026. Panitia akan
+            melakukan verifikasi dan menghubungi kamu melalui WhatsApp aktif yang telah didaftarkan.
           </p>
 
           {id && (

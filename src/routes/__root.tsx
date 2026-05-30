@@ -7,10 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
@@ -37,9 +36,6 @@ function NotFoundComponent() {
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -78,22 +74,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Kemah Film MPJ 2026 | Media Pondok Jawa Timur" },
-      { name: "description", content: "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur." },
+      {
+        name: "description",
+        content:
+          "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur.",
+      },
       { name: "author", content: "Media Pondok Jawa Timur" },
       { property: "og:title", content: "Kemah Film MPJ 2026 | Media Pondok Jawa Timur" },
-      { property: "og:description", content: "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur." },
+      {
+        property: "og:description",
+        content:
+          "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Kemah Film MPJ 2026 | Media Pondok Jawa Timur" },
-      { name: "twitter:description", content: "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Gpw92JVucwQPb6AIPS5fhDHWbUv1/social-images/social-1780166318187-Picture5.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Gpw92JVucwQPb6AIPS5fhDHWbUv1/social-images/social-1780166318187-Picture5.webp" },
+      {
+        name: "twitter:description",
+        content:
+          "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur.",
+      },
+      { property: "og:image", content: "/og-image.webp" },
+      { name: "twitter:image", content: "/og-image.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+      },
     ],
   }),
 

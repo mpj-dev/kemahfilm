@@ -1,8 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import {
-  Film, Camera, Clapperboard, Tent, Users, Award, Calendar, MapPin,
-  CheckCircle2, Sparkles, Lightbulb, PenLine, Scissors, MessageCircle, ArrowRight
+  Film,
+  Camera,
+  Clapperboard,
+  Tent,
+  Users,
+  Award,
+  Calendar,
+  MapPin,
+  CheckCircle2,
+  Sparkles,
+  Lightbulb,
+  PenLine,
+  Scissors,
+  MessageCircle,
+  ArrowRight,
 } from "lucide-react";
 import logo from "@/assets/logo-mpj.png";
 import heroImg from "@/assets/hero-kemah.jpg";
@@ -14,9 +27,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Kemah Film MPJ 2026 | Media Pondok Jawa Timur" },
-      { name: "description", content: "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur. 3–5 Juli 2026 di Benjor Pine Camping Ground, Malang." },
+      {
+        name: "description",
+        content:
+          "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur. 3–5 Juli 2026 di Benjor Pine Camping Ground, Malang.",
+      },
       { property: "og:title", content: "Kemah Film MPJ 2026" },
-      { property: "og:description", content: "Tempat Gagasan Bertemu Rasa, Tempat Karya Bertemu Makna." },
+      {
+        property: "og:description",
+        content: "Tempat Gagasan Bertemu Rasa, Tempat Karya Bertemu Makna.",
+      },
     ],
     links: [{ rel: "canonical", href: "/" }],
   }),
@@ -40,11 +60,27 @@ const tujuan = [
 
 const kelas = [
   { icon: Film, title: "Dasar Perfilman", desc: "Fondasi bahasa visual dan grammar sinema." },
-  { icon: Lightbulb, title: "Pengembangan Ide & Storytelling", desc: "Menggali ide kuat dari realitas santri." },
+  {
+    icon: Lightbulb,
+    title: "Pengembangan Ide & Storytelling",
+    desc: "Menggali ide kuat dari realitas santri.",
+  },
   { icon: PenLine, title: "Penulisan Skrip", desc: "Struktur naskah film pendek yang efektif." },
-  { icon: Camera, title: "Cinematography & Teknik Shooting", desc: "Komposisi, lighting, dan tata kamera." },
-  { icon: Scissors, title: "Editing & Pasca Produksi", desc: "Rhythm, color, dan finishing karya." },
-  { icon: Sparkles, title: "Review Karya & Sharing Session", desc: "Kurasi karya bersama mentor dan peserta." },
+  {
+    icon: Camera,
+    title: "Cinematography & Teknik Shooting",
+    desc: "Komposisi, lighting, dan tata kamera.",
+  },
+  {
+    icon: Scissors,
+    title: "Editing & Pasca Produksi",
+    desc: "Rhythm, color, dan finishing karya.",
+  },
+  {
+    icon: Sparkles,
+    title: "Review Karya & Sharing Session",
+    desc: "Kurasi karya bersama mentor dan peserta.",
+  },
 ];
 
 const ketentuan = [
@@ -82,14 +118,38 @@ const timeline = [
 ];
 
 const faqs = [
-  { q: "Apakah semua pendaftar otomatis lolos?", a: "Tidak. Panitia melakukan verifikasi berkas, portofolio, dan kelengkapan administrasi. Sebagian peserta mungkin diundang wawancara singkat." },
-  { q: "Apakah wajib punya karya?", a: "Wajib. Kamu perlu mengirim minimal satu link karya orisinil (film/video) yang pernah kamu produksi sesuai dengan kemampuan yang dipilih." },
-  { q: "Bagaimana ketentuan link karya?", a: "Link dapat berupa YouTube, Instagram, TikTok, Google Drive, atau platform lain. Pastikan link publik dan dapat diakses panitia tanpa permintaan akses." },
-  { q: "Bagaimana upload surat delegasi?", a: "Unggah surat delegasi resmi dari media/pesantren dalam format PDF, JPG, atau PNG saat mengisi formulir pendaftaran." },
-  { q: "Bagaimana verifikasi pembayaran?", a: "Setelah submit, panitia akan memverifikasi bukti pembayaran dalam 1–3 hari kerja dan menghubungi via WhatsApp." },
-  { q: "Kapan peserta mendapat informasi lanjutan?", a: "Informasi pembagian kelompok dan technical meeting dibagikan via WhatsApp grup peserta setelah verifikasi selesai." },
-  { q: "Apa saja perlengkapan yang wajib dibawa?", a: "Perlengkapan ibadah, pakaian ganti, sleeping bag/matras tipis, obat pribadi, serta perlengkapan produksi (kamera, tripod, audio) sesuai kapasitas kelompok." },
-  { q: "Bagaimana kebijakan refund?", a: "Biaya pendaftaran yang telah dibayarkan tidak dapat dikembalikan, kecuali kegiatan dibatalkan oleh panitia." },
+  {
+    q: "Apakah semua pendaftar otomatis lolos?",
+    a: "Tidak. Panitia melakukan verifikasi berkas, portofolio, dan kelengkapan administrasi. Sebagian peserta mungkin diundang wawancara singkat.",
+  },
+  {
+    q: "Apakah wajib punya karya?",
+    a: "Wajib. Kamu perlu mengirim minimal satu link karya orisinil (film/video) yang pernah kamu produksi sesuai dengan kemampuan yang dipilih.",
+  },
+  {
+    q: "Bagaimana ketentuan link karya?",
+    a: "Link dapat berupa YouTube, Instagram, TikTok, Google Drive, atau platform lain. Pastikan link publik dan dapat diakses panitia tanpa permintaan akses.",
+  },
+  {
+    q: "Bagaimana upload surat delegasi?",
+    a: "Unggah surat delegasi resmi dari media/pesantren dalam format PDF, JPG, atau PNG saat mengisi formulir pendaftaran.",
+  },
+  {
+    q: "Bagaimana verifikasi pembayaran?",
+    a: "Setelah submit, panitia akan memverifikasi bukti pembayaran dalam 1–3 hari kerja dan menghubungi via WhatsApp.",
+  },
+  {
+    q: "Kapan peserta mendapat informasi lanjutan?",
+    a: "Informasi pembagian kelompok dan technical meeting dibagikan via WhatsApp grup peserta setelah verifikasi selesai.",
+  },
+  {
+    q: "Apa saja perlengkapan yang wajib dibawa?",
+    a: "Perlengkapan ibadah, pakaian ganti, sleeping bag/matras tipis, obat pribadi, serta perlengkapan produksi (kamera, tripod, audio) sesuai kapasitas kelompok.",
+  },
+  {
+    q: "Bagaimana kebijakan refund?",
+    a: "Biaya pendaftaran yang telah dibayarkan tidak dapat dikembalikan, kecuali kegiatan dibatalkan oleh panitia.",
+  },
 ];
 
 function LandingPage() {
@@ -107,7 +167,11 @@ function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/40 via-primary-dark/60 to-primary-dark/90" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-20 sm:pt-24 sm:pb-28">
           <motion.div {...fadeUp} className="flex items-center gap-3 mb-6">
-            <img src={logo} alt="Logo MPJ" className="h-12 w-12 bg-white/95 rounded-xl p-1.5 shadow-lg" />
+            <img
+              src={logo}
+              alt="Logo MPJ"
+              className="h-12 w-12 bg-white/95 rounded-xl p-1.5 shadow-lg"
+            />
             <div className="text-xs sm:text-sm">
               <p className="font-semibold tracking-wide">Media Pondok Jawa Timur</p>
               <p className="text-primary-foreground/70">Regional Malang</p>
@@ -156,7 +220,8 @@ function LandingPage() {
               <Calendar className="h-4 w-4 text-accent" /> 3–5 Juli 2026
             </div>
             <div className="flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-4 py-2 backdrop-blur">
-              <MapPin className="h-4 w-4 text-accent" /> Benjor Pine Camping Ground, Tumpang — Malang
+              <MapPin className="h-4 w-4 text-accent" /> Benjor Pine Camping Ground, Tumpang —
+              Malang
             </div>
           </motion.div>
 
@@ -275,7 +340,12 @@ function LandingPage() {
       </Section>
 
       {/* BIAYA */}
-      <Section id="biaya" eyebrow="Biaya Pendaftaran" title="Pilih Gelombangmu" description="Semakin awal mendaftar, semakin hemat. Kuota terbatas per gelombang.">
+      <Section
+        id="biaya"
+        eyebrow="Biaya Pendaftaran"
+        title="Pilih Gelombangmu"
+        description="Semakin awal mendaftar, semakin hemat. Kuota terbatas per gelombang."
+      >
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {biaya.map((b, i) => (
             <motion.div
@@ -295,11 +365,17 @@ function LandingPage() {
                   Populer
                 </span>
               )}
-              <p className={`text-sm font-semibold ${b.popular ? "text-accent" : "text-primary"}`}>{b.label}</p>
-              <p className={`mt-3 text-3xl font-extrabold ${b.popular ? "text-primary-foreground" : "text-primary-dark"}`}>
+              <p className={`text-sm font-semibold ${b.popular ? "text-accent" : "text-primary"}`}>
+                {b.label}
+              </p>
+              <p
+                className={`mt-3 text-3xl font-extrabold ${b.popular ? "text-primary-foreground" : "text-primary-dark"}`}
+              >
                 Rp{b.price}
               </p>
-              <p className={`mt-1 text-xs ${b.popular ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+              <p
+                className={`mt-1 text-xs ${b.popular ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+              >
                 {b.note}
               </p>
             </motion.div>
@@ -334,7 +410,9 @@ function LandingPage() {
                 <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 h-3.5 w-3.5 rounded-full bg-accent ring-4 ring-background" />
                 <div className="ml-12 sm:ml-0 sm:w-1/2 sm:px-8">
                   <div className="rounded-2xl bg-card p-5 shadow-card border border-border/40">
-                    <p className="text-xs font-semibold text-accent uppercase tracking-wider">{t.date}</p>
+                    <p className="text-xs font-semibold text-accent uppercase tracking-wider">
+                      {t.date}
+                    </p>
                     <p className="mt-1 font-bold text-primary-dark">{t.title}</p>
                   </div>
                 </div>
@@ -352,12 +430,15 @@ function LandingPage() {
             <Users className="h-7 w-7 text-primary mb-3" />
             <p className="text-foreground/85 leading-relaxed">
               Peserta akan dibagi secara acak ke dalam kelompok produksi berisi
-              <strong className="text-primary-dark"> 8–10 orang</strong> dari berbagai delegasi pesantren.
-              Setiap kelompok menempati satu tenda dan bekerja secara kolaboratif selama kegiatan.
+              <strong className="text-primary-dark"> 8–10 orang</strong> dari berbagai delegasi
+              pesantren. Setiap kelompok menempati satu tenda dan bekerja secara kolaboratif selama
+              kegiatan.
             </p>
           </div>
           <div className="md:col-span-2 rounded-2xl bg-primary-dark p-7 text-primary-foreground shadow-card">
-            <p className="text-sm font-semibold text-accent uppercase tracking-wider mb-3">Output Kelompok</p>
+            <p className="text-sm font-semibold text-accent uppercase tracking-wider mb-3">
+              Output Kelompok
+            </p>
             <ul className="space-y-2 text-primary-foreground/90 text-sm">
               <li>• Ide cerita</li>
               <li>• Naskah film pendek</li>
@@ -383,7 +464,9 @@ function LandingPage() {
             >
               <summary className="flex items-start justify-between gap-4 cursor-pointer font-semibold text-primary-dark">
                 {f.q}
-                <span className="shrink-0 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm group-open:rotate-45 transition-transform">+</span>
+                <span className="shrink-0 h-6 w-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm group-open:rotate-45 transition-transform">
+                  +
+                </span>
               </summary>
               <p className="mt-3 text-muted-foreground leading-relaxed">{f.a}</p>
             </motion.details>
@@ -400,7 +483,8 @@ function LandingPage() {
               <Clapperboard className="h-10 w-10 text-accent mx-auto mb-4" />
               <h2 className="text-3xl sm:text-4xl font-bold">Siap Berkemah & Berkarya?</h2>
               <p className="mt-3 text-primary-foreground/85 max-w-xl mx-auto">
-                Bergabunglah dengan ratusan pegiat media pondok dari seluruh Jawa Timur dalam tiga hari yang akan mengubah cara kamu memandang film.
+                Bergabunglah dengan ratusan pegiat media pondok dari seluruh Jawa Timur dalam tiga
+                hari yang akan mengubah cara kamu memandang film.
               </p>
               <div className="mt-7 flex flex-col sm:flex-row justify-center gap-3">
                 <Link

@@ -33,10 +33,31 @@ export function SiteFooter() {
         <div>
           <p className="text-sm font-semibold mb-3">Tautan</p>
           <ul className="space-y-2 text-sm text-primary-foreground/80">
-            <li><Link to="/" className="hover:text-accent">Beranda</Link></li>
-            <li><Link to="/daftar" className="hover:text-accent">Daftar Peserta</Link></li>
-            <li><Link to="/ketentuan" className="hover:text-accent">Ketentuan</Link></li>
-            <li><a href="#" className="hover:text-accent">Instagram</a></li>
+            <li>
+              <Link to="/" className="hover:text-accent">
+                Beranda
+              </Link>
+            </li>
+            <li>
+              <Link to="/daftar" className="hover:text-accent">
+                Daftar Peserta
+              </Link>
+            </li>
+            <li>
+              <Link to="/ketentuan" className="hover:text-accent">
+                Ketentuan
+              </Link>
+            </li>
+            <li>
+              <a
+                href="https://linktr.ee/mediapondokjawatimur"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-accent"
+              >
+                Media Sosial MPJ
+              </a>
+            </li>
           </ul>
         </div>
       </div>
