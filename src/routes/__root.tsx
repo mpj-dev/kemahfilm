@@ -84,6 +84,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:description", content: "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Kemah Film MPJ 2026 | Media Pondok Jawa Timur" },
+      { name: "twitter:description", content: "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Gpw92JVucwQPb6AIPS5fhDHWbUv1/social-images/social-1780166318187-Picture5.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/Gpw92JVucwQPb6AIPS5fhDHWbUv1/social-images/social-1780166318187-Picture5.webp" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
