@@ -3,6 +3,8 @@ const THROTTLE_SECONDS = 10 * 60;
 const EVENT_YEAR = "2026";
 const SHEET_NAME = "REGISTRATIONS";
 const WAITING_PAYMENT_STATUS = "WAITING_ADMIN_APPROVAL";
+// TEST_PAYMENT_DATE hanya untuk testing dan harus dikosongkan sebelum produksi.
+const TEST_PAYMENT_DATE = "";
 
 const PAYMENT_TIERS = {
   WAVE_1: 285000,
@@ -11,11 +13,7 @@ const PAYMENT_TIERS = {
   GENERAL: 1000000,
 };
 
-const ALLOWED_MIME_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-];
+const ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 
 const HEADERS = [
   "timestamp",
@@ -50,7 +48,119 @@ const HEADERS = [
   "payment_reviewed_at",
   "payment_reviewed_by",
   "official_participant_id",
+  "delegation_status",
 ];
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu("Kemah Film Admin")
+    .addItem("ACC Pembayaran Peserta Terpilih", "approveSelectedPayment")
+    .addItem("Tolak Pembayaran Peserta Terpilih", "rejectSelectedPayment")
+    .addToUi();
+}
+
+function approveSelectedPayment() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const selected = getSelectedRegistration();
+    const result = JSON.parse(approvePayment(selected.registrationId, getActiveAdminName()));
+
+    ui.alert(
+      "Pembayaran Berhasil Di-ACC",
+      "Nomor pendaftaran: " +
+        result.registration_id +
+        "\nID resmi peserta: " +
+        result.official_participant_id,
+      ui.ButtonSet.OK,
+    );
+  } catch (error) {
+    showAdminError(error);
+  }
+}
+
+function rejectSelectedPayment() {
+  const ui = SpreadsheetApp.getUi();
+
+  try {
+    const selected = getSelectedRegistration();
+    const prompt = ui.prompt(
+      "Tolak Pembayaran Peserta",
+      "Masukkan alasan penolakan untuk " + selected.registrationId + ":",
+      ui.ButtonSet.OK_CANCEL,
+    );
+
+    if (prompt.getSelectedButton() !== ui.Button.OK) return;
+
+    const reason = prompt.getResponseText().trim();
+    if (!reason) {
+      ui.alert("Pembayaran tidak ditolak", "Alasan penolakan wajib diisi.", ui.ButtonSet.OK);
+      return;
+    }
+
+    const result = JSON.parse(
+      rejectPayment(selected.registrationId, getActiveAdminName(), reason),
+    );
+
+    ui.alert(
+      "Pembayaran Berhasil Ditolak",
+      "Nomor pendaftaran: " + result.registration_id,
+      ui.ButtonSet.OK,
+    );
+  } catch (error) {
+    showAdminError(error);
+  }
+}
+
+function getSelectedRegistration() {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const range = sheet && sheet.getActiveRange();
+
+  if (!sheet || sheet.getName() !== SHEET_NAME) {
+    throw new Error("Pilih row peserta pada sheet " + SHEET_NAME + ".");
+  }
+
+  if (!range || range.getRow() <= 1) {
+    throw new Error("Pilih salah satu row peserta, bukan header.");
+  }
+
+  const headers = getHeaderMap(sheet);
+  if (!headers.registration_id) {
+    throw new Error("Header sheet belum lengkap: registration_id");
+  }
+  if (!headers.payment_status) {
+    throw new Error("Header sheet belum lengkap: payment_status");
+  }
+
+  const registrationId = String(
+    getRowValue(sheet, range.getRow(), headers, "registration_id") || "",
+  ).trim();
+  if (!registrationId) {
+    throw new Error("Row terpilih tidak memiliki nomor pendaftaran.");
+  }
+
+  const paymentStatus = String(
+    getRowValue(sheet, range.getRow(), headers, "payment_status") || "",
+  ).trim();
+  if (paymentStatus !== WAITING_PAYMENT_STATUS) {
+    throw new Error("Pembayaran sudah memiliki keputusan final atau belum siap diproses.");
+  }
+
+  return { registrationId };
+}
+
+function getActiveAdminName() {
+  const email = Session.getActiveUser().getEmail();
+  return email ? email.trim() : "Admin";
+}
+
+function showAdminError(error) {
+  SpreadsheetApp.getUi().alert(
+    "Aksi Gagal",
+    error && error.message ? error.message : "Terjadi kesalahan saat memproses pembayaran.",
+    SpreadsheetApp.getUi().ButtonSet.OK,
+  );
+}
 
 function doGet() {
   try {
@@ -89,18 +199,20 @@ function doPost(event) {
 
     const registrationId = createRegistrationId();
 
-    const delegationUrl = saveFile(
-      backend.delegationFolder,
-      registrationId,
-      "surat-delegasi",
-      registration.surat_delegasi_file
-    );
+    const delegationUrl = registration.surat_delegasi_file
+      ? saveFile(
+          backend.delegationFolder,
+          registrationId,
+          "surat-delegasi",
+          registration.surat_delegasi_file,
+        )
+      : "";
 
     const paymentUrl = saveFile(
       backend.paymentFolder,
       registrationId,
       "bukti-pembayaran",
-      registration.bukti_pembayaran_file
+      registration.bukti_pembayaran_file,
     );
 
     const lock = LockService.getScriptLock();
@@ -140,6 +252,7 @@ function doPost(event) {
         payment_reviewed_at: "",
         payment_reviewed_by: "",
         official_participant_id: "",
+        delegation_status: registration.delegation_status,
       });
     } finally {
       lock.releaseLock();
@@ -224,9 +337,7 @@ function ensureSheet(spreadsheet) {
     });
 
     if (missingHeaders.length) {
-      sheet
-        .getRange(1, firstRow.length + 1, 1, missingHeaders.length)
-        .setValues([missingHeaders]);
+      sheet.getRange(1, firstRow.length + 1, 1, missingHeaders.length).setValues([missingHeaders]);
       sheet.autoResizeColumns(firstRow.length + 1, missingHeaders.length);
     }
   }
@@ -327,9 +438,12 @@ function validatePayload(payload) {
     throw new Error("Persetujuan peserta wajib diberikan.");
   }
 
-  const payment = validatePayment(payload, whatsapp);
+  const delegationStatus = validateDelegationStatus(payload.delegation_status);
+  const payment = validatePayment(payload, whatsapp, delegationStatus);
 
-  validateFile(payload.surat_delegasi_file);
+  if (delegationStatus === "HAS_DELEGATION" || payload.surat_delegasi_file) {
+    validateFile(payload.surat_delegasi_file);
+  }
   validateFile(payload.bukti_pembayaran_file);
 
   return {
@@ -343,6 +457,7 @@ function validatePayload(payload) {
     kendala_produksi: payload.kendala_produksi.trim(),
     motivasi: payload.motivasi.trim(),
     link_karya: payload.link_karya.trim(),
+    delegation_status: delegationStatus,
     surat_delegasi_file: payload.surat_delegasi_file,
     bukti_pembayaran_file: payload.bukti_pembayaran_file,
     agreement: true,
@@ -359,7 +474,15 @@ function validatePayload(payload) {
   };
 }
 
-function validatePayment(payload, whatsapp) {
+function validateDelegationStatus(value) {
+  const status = typeof value === "string" ? value.trim() : "";
+  if (status !== "HAS_DELEGATION" && status !== "NO_DELEGATION") {
+    throw new Error("Status surat delegasi tidak valid.");
+  }
+  return status;
+}
+
+function validatePayment(payload, whatsapp, delegationStatus) {
   const tier = typeof payload.payment_tier === "string" ? payload.payment_tier.trim() : "";
   const baseAmount = Number(payload.payment_base_amount);
   const uniqueCode = Number(payload.payment_unique_code);
@@ -368,7 +491,9 @@ function validatePayment(payload, whatsapp) {
   const accountNumber = validatePaymentAccountValue(payload.payment_account_number);
   const accountHolder = validatePaymentAccountValue(payload.payment_account_holder);
 
-  if (!Object.prototype.hasOwnProperty.call(PAYMENT_TIERS, tier)) {
+  const expectedTier = getCurrentPaymentTier(delegationStatus);
+
+  if (tier !== expectedTier) {
     throw new Error("Kategori pembayaran tidak valid.");
   }
 
@@ -401,6 +526,25 @@ function validatePayment(payload, whatsapp) {
     accountNumber,
     accountHolder,
   };
+}
+
+function getCurrentPaymentTier(delegationStatus) {
+  if (delegationStatus === "NO_DELEGATION") return "GENERAL";
+
+  const jakartaDate = getJakartaPaymentDate();
+  if (jakartaDate >= "2026-06-26") return "WAVE_3_OTS";
+  if (jakartaDate >= "2026-06-15") return "WAVE_2";
+  return "WAVE_1";
+}
+
+function getJakartaPaymentDate() {
+  if (TEST_PAYMENT_DATE) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(TEST_PAYMENT_DATE)) {
+      throw new Error("TEST_PAYMENT_DATE harus menggunakan format YYYY-MM-DD.");
+    }
+    return TEST_PAYMENT_DATE;
+  }
+  return Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd");
 }
 
 function validatePaymentAccountValue(value) {
@@ -448,7 +592,7 @@ function validateFile(file) {
   }
 
   const base64 = normalizeBase64(file.data);
-  const estimatedBytes = Math.floor(base64.length * 3 / 4);
+  const estimatedBytes = Math.floor((base64.length * 3) / 4);
 
   if (estimatedBytes <= 0) {
     throw new Error("Berkas tidak boleh kosong.");
@@ -474,7 +618,9 @@ function throttle(whatsapp) {
   const key = "registration:" + whatsapp;
 
   if (cache.get(key)) {
-    throw new Error("Pendaftaran dengan nomor WhatsApp ini baru saja dikirim. Coba lagi dalam 10 menit.");
+    throw new Error(
+      "Pendaftaran dengan nomor WhatsApp ini baru saja dikirim. Coba lagi dalam 10 menit.",
+    );
   }
 
   cache.put(key, "1", THROTTLE_SECONDS);
@@ -539,12 +685,7 @@ function approvePayment(registrationId, adminName) {
 
     validateStoredPayment(backend.sheet, row, headers);
 
-    let officialParticipantId = getRowValue(
-      backend.sheet,
-      row,
-      headers,
-      "official_participant_id"
-    );
+    let officialParticipantId = getRowValue(backend.sheet, row, headers, "official_participant_id");
 
     if (!officialParticipantId) {
       officialParticipantId = createOfficialParticipantId();
@@ -554,13 +695,7 @@ function approvePayment(registrationId, adminName) {
     setRowValue(backend.sheet, row, headers, "registration_status", "CONFIRMED");
     setRowValue(backend.sheet, row, headers, "payment_reviewed_at", new Date());
     setRowValue(backend.sheet, row, headers, "payment_reviewed_by", reviewer);
-    setRowValue(
-      backend.sheet,
-      row,
-      headers,
-      "official_participant_id",
-      officialParticipantId
-    );
+    setRowValue(backend.sheet, row, headers, "official_participant_id", officialParticipantId);
 
     return logAdminResult({
       ok: true,
@@ -630,9 +765,7 @@ function findRegistrationRow(sheet, headers, registrationId) {
 
   if (lastRow < 2) throw new Error("Data pendaftaran belum tersedia.");
 
-  const values = sheet
-    .getRange(2, headers.registration_id, lastRow - 1, 1)
-    .getValues();
+  const values = sheet.getRange(2, headers.registration_id, lastRow - 1, 1).getValues();
 
   for (let index = 0; index < values.length; index += 1) {
     if (String(values[index][0]).trim() === id) return index + 2;
@@ -690,7 +823,7 @@ function logAdminResult(body) {
 }
 
 function jsonResponse(body) {
-  return ContentService
-    .createTextOutput(JSON.stringify(body))
-    .setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify(body)).setMimeType(
+    ContentService.MimeType.JSON,
+  );
 }
