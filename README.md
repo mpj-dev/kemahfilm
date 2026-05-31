@@ -39,6 +39,33 @@ npm run build
 
 Setup penerima data formulir berada di [`gas/README.md`](gas/README.md).
 
+## Konfigurasi Pembayaran
+
+Sebelum membuka pendaftaran ke publik, ganti placeholder rekening di
+[`src/lib/payment.ts`](src/lib/payment.ts):
+
+```ts
+bankName: "ISI_NAMA_BANK",
+accountNumber: "ISI_NOMOR_REKENING",
+accountHolder: "ISI_NAMA_PENERIMA",
+```
+
+Form memblokir submit selama placeholder tersebut belum diganti. Nominal transfer
+terdiri dari biaya kategori dan kode unik tiga digit terakhir WhatsApp peserta.
+Jika tiga digit terakhir adalah `000`, kode unik diubah menjadi `111`.
+
+Contoh: Gelombang 1 `Rp285.000` dengan kode unik `047` menghasilkan total
+transfer `Rp285.047`.
+
+Peserta belum dianggap resmi setelah submit. Admin perlu menyetujui pembayaran
+melalui helper Apps Script sebelum `official_participant_id` dibuat.
+
+## Asset Logo
+
+Header menggunakan `src/assets/logo-kemahfilm.png`. Hero organizer dan footer
+menggunakan `src/assets/logo-mpj-landscape-putih.png` tanpa label Regional
+Malang.
+
 ## Smoke Test Produksi
 
 1. Buka landing page dan `/daftar` dari domain produksi.

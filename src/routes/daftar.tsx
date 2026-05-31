@@ -8,6 +8,8 @@ import {
   Upload,
   CheckCircle2,
   AlertCircle,
+  Copy,
+  AlertTriangle,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -16,6 +18,14 @@ import {
   fileToBase64,
   rememberSuccessfulRegistration,
 } from "@/lib/registration";
+import {
+  PAYMENT_CONFIG,
+  PAYMENT_TIERS,
+  calculatePaymentDetails,
+  formatPaymentUniqueCode,
+  formatRupiah,
+  isPaymentConfigReady,
+} from "@/lib/payment";
 
 export const Route = createFileRoute("/daftar")({
   head: () => ({
@@ -43,6 +53,7 @@ type FormState = {
   link_karya: string;
   surat_delegasi_file: File | null;
   bukti_pembayaran_file: File | null;
+  payment_tier: string;
   agreement: boolean;
   website: string;
 };
@@ -64,6 +75,7 @@ const initial: FormState = {
   link_karya: "",
   surat_delegasi_file: null,
   bukti_pembayaran_file: null,
+  payment_tier: "",
   agreement: false,
   website: "",
 };
@@ -95,6 +107,9 @@ function DaftarPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [copied, setCopied] = useState<string | null>(null);
+  const paymentDetails = calculatePaymentDetails(data.payment_tier, data.whatsapp);
+  const paymentConfigReady = isPaymentConfigReady();
 
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) => {
     setData((d) => ({ ...d, [k]: v }));
@@ -123,6 +138,10 @@ function DaftarPage() {
     if (s === 3) {
       if (!data.link_karya.trim() || !isUrl(data.link_karya))
         e.link_karya = "Harus berupa URL valid";
+      if (!data.payment_tier) e.payment_tier = "Pilih kategori pendaftaran";
+      if (!paymentConfigReady) e.payment_config = "Informasi rekening belum tersedia";
+      if (paymentDetails && paymentDetails.totalAmount <= paymentDetails.tier.amount)
+        e.payment_tier = "Nominal pembayaran tidak valid";
       const suratDelegasiError = validateUpload(data.surat_delegasi_file, "Surat delegasi");
       const buktiPembayaranError = validateUpload(data.bukti_pembayaran_file, "Bukti pembayaran");
       if (suratDelegasiError) e.surat_delegasi_file = suratDelegasiError;
@@ -137,6 +156,11 @@ function DaftarPage() {
 
   async function handleSubmit() {
     if (!validateStep(4)) return;
+    if (!paymentDetails || !paymentConfigReady) {
+      setStep(3);
+      validateStep(3);
+      return;
+    }
     setSubmitting(true);
     setSubmitError(null);
     try {
@@ -162,10 +186,22 @@ function DaftarPage() {
         agreement: data.agreement,
         website: data.website,
         form_started_at: formStartedAt,
+        payment_tier: paymentDetails.tier.id,
+        payment_base_amount: paymentDetails.tier.amount,
+        payment_unique_code: paymentDetails.uniqueCode,
+        payment_total_amount: paymentDetails.totalAmount,
+        payment_bank_name: PAYMENT_CONFIG.bankName,
+        payment_account_number: PAYMENT_CONFIG.accountNumber,
+        payment_account_holder: PAYMENT_CONFIG.accountHolder,
+        payment_status: "WAITING_ADMIN_APPROVAL",
         source: "kemahfilm.mediapondokjatim.id",
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       });
-      rememberSuccessfulRegistration(res.registration_id);
+      rememberSuccessfulRegistration({
+        registrationId: res.registration_id,
+        paymentTotalAmount: paymentDetails.totalAmount,
+        paymentStatus: "WAITING_ADMIN_APPROVAL",
+      });
       navigate({ to: "/sukses", search: { id: res.registration_id } });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.");
@@ -181,6 +217,16 @@ function DaftarPage() {
   }
   function prev() {
     if (step > 0) setStep(step - 1);
+  }
+
+  async function copyPaymentValue(label: string, value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopied(label);
+      window.setTimeout(() => setCopied(null), 1800);
+    } catch {
+      setCopied(null);
+    }
   }
 
   const progress = ((step + 1) / STEPS.length) * 100;
@@ -392,6 +438,29 @@ function DaftarPage() {
                     error={errors.surat_delegasi_file}
                     accept=".pdf,.jpg,.jpeg,.png"
                   />
+                  <Field label="Kategori Pendaftaran" error={errors.payment_tier}>
+                    <div className="grid gap-2">
+                      {PAYMENT_TIERS.map((tier) => (
+                        <RadioCard
+                          key={tier.id}
+                          label={`${tier.label} — ${formatRupiah(tier.amount)}`}
+                          checked={data.payment_tier === tier.id}
+                          onChange={() => update("payment_tier", tier.id)}
+                        />
+                      ))}
+                    </div>
+                  </Field>
+                  <PaymentCard
+                    paymentConfigReady={paymentConfigReady}
+                    paymentDetails={paymentDetails}
+                    copied={copied}
+                    onCopy={copyPaymentValue}
+                  />
+                  {errors.payment_config && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" /> {errors.payment_config}
+                    </p>
+                  )}
                   <FileField
                     label="Bukti pembayaran"
                     hint="Format: PDF, JPG, atau PNG"
@@ -481,6 +550,125 @@ function DaftarPage() {
         </div>
       </div>
       <SiteFooter />
+    </div>
+  );
+}
+
+function PaymentCard({
+  paymentConfigReady,
+  paymentDetails,
+  copied,
+  onCopy,
+}: {
+  paymentConfigReady: boolean;
+  paymentDetails: ReturnType<typeof calculatePaymentDetails>;
+  copied: string | null;
+  onCopy: (label: string, value: string) => void;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-secondary/50 p-5">
+      <h3 className="font-bold text-primary-dark">Informasi Pembayaran</h3>
+      <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+        Silakan transfer sesuai nominal total berikut. Tiga angka terakhir merupakan kode unik untuk
+        memudahkan validasi pembayaran oleh panitia.
+      </p>
+
+      {!paymentConfigReady ? (
+        <div className="mt-4 rounded-xl border border-accent/40 bg-accent/10 p-3 text-sm text-foreground flex gap-2">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-accent" />
+          <span>
+            {import.meta.env.DEV
+              ? "Data rekening belum dikonfigurasi."
+              : "Informasi rekening belum tersedia. Silakan hubungi admin sebelum melanjutkan pendaftaran."}
+          </span>
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-2 text-sm">
+          <PaymentRow label="Bank" value={PAYMENT_CONFIG.bankName} />
+          <PaymentRow
+            label="Nomor Rekening"
+            value={PAYMENT_CONFIG.accountNumber}
+            copyLabel="rekening"
+            copied={copied}
+            onCopy={onCopy}
+          />
+          <PaymentRow
+            label="Atas Nama"
+            value={PAYMENT_CONFIG.accountHolder}
+            copyLabel="penerima"
+            copied={copied}
+            onCopy={onCopy}
+          />
+          <PaymentRow
+            label="Kategori"
+            value={paymentDetails?.tier.label ?? "Pilih kategori dahulu"}
+          />
+          <PaymentRow
+            label="Biaya Pendaftaran"
+            value={paymentDetails ? formatRupiah(paymentDetails.tier.amount) : "—"}
+          />
+          <PaymentRow
+            label="Kode Unik"
+            value={paymentDetails ? formatPaymentUniqueCode(paymentDetails.uniqueCode) : "—"}
+          />
+          <PaymentRow
+            label="Total Transfer"
+            value={paymentDetails ? formatRupiah(paymentDetails.totalAmount) : "—"}
+            copyLabel={paymentDetails ? "total" : undefined}
+            copyValue={paymentDetails ? String(paymentDetails.totalAmount) : undefined}
+            copied={copied}
+            onCopy={onCopy}
+            strong
+          />
+        </div>
+      )}
+
+      <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
+        Setelah transfer, upload bukti pembayaran yang jelas. Panitia akan memvalidasi pembayaran
+        sebelum peserta mendapatkan ID resmi.
+      </p>
+    </div>
+  );
+}
+
+function PaymentRow({
+  label,
+  value,
+  copyLabel,
+  copyValue = value,
+  copied,
+  onCopy,
+  strong = false,
+}: {
+  label: string;
+  value: string;
+  copyLabel?: string;
+  copyValue?: string;
+  copied?: string | null;
+  onCopy?: (label: string, value: string) => void;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-xl bg-card px-3 py-2.5">
+      <div>
+        <p className="text-xs text-muted-foreground">{label}</p>
+        <p
+          className={
+            strong ? "font-bold text-lg text-primary-dark" : "font-semibold text-foreground"
+          }
+        >
+          {value}
+        </p>
+      </div>
+      {copyLabel && onCopy && (
+        <button
+          type="button"
+          onClick={() => onCopy(copyLabel, copyValue)}
+          className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-semibold hover:border-primary/40 transition"
+        >
+          <Copy className="h-3.5 w-3.5" /> {copied === copyLabel ? "Tersalin" : "Salin"}
+        </button>
+      )}
     </div>
   );
 }

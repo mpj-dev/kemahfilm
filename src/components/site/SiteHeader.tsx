@@ -1,12 +1,12 @@
 import { Link } from "@tanstack/react-router";
-import logo from "@/assets/logo-mpj.png";
+import logo from "@/assets/logo-kemahfilm.png";
 
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 backdrop-blur-md bg-background/80 border-b border-border/60">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5">
-          <img src={logo} alt="Media Pondok Jawa Timur" className="h-9 w-9 object-contain" />
+          <img src={logo} alt="Kemah Film MPJ 2026" className="h-11 w-11 object-contain" />
           <div className="leading-tight">
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
               Kemah Film

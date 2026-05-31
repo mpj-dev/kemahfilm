@@ -16,3 +16,27 @@ dan menambahkan satu baris ke Google Sheets.
 
 Setiap file dibatasi maksimum 5 MB dan hanya menerima PDF, JPG, atau PNG.
 Nomor WhatsApp yang sama hanya dapat mengirim satu kali dalam 10 menit.
+
+## Validasi Pembayaran
+
+Frontend mengirim snapshot rekening, kategori biaya, kode unik, dan total
+transfer. Kode unik berasal dari tiga digit terakhir WhatsApp peserta. Jika
+hasilnya `000`, kode diubah menjadi `111`.
+
+Peserta baru berstatus resmi setelah pembayaran disetujui admin. Jalankan helper
+berikut dari editor Apps Script:
+
+```js
+approvePayment("KF-MPJ-2026-0002", "Admin Test");
+rejectPayment("KF-MPJ-2026-0003", "Admin Test", "Nominal tidak sesuai");
+```
+
+`approvePayment()` mengubah status pembayaran menjadi `APPROVED`, status
+pendaftaran menjadi `CONFIRMED`, dan membuat `official_participant_id` dengan
+format `KFM-2026-0001`.
+
+`rejectPayment()` mengubah status pembayaran menjadi `REJECTED`, status
+pendaftaran menjadi `PAYMENT_REJECTED`, serta menyimpan alasan di `admin_notes`.
+
+Helper hanya memproses submission baru dengan status `WAITING_ADMIN_APPROVAL`.
+Row lama tanpa nominal pembayaran lengkap ditangani manual.

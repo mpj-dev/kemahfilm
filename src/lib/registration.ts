@@ -14,6 +14,14 @@ export interface RegistrationPayload {
   agreement: boolean;
   website: string;
   form_started_at: string;
+  payment_tier: string;
+  payment_base_amount: number;
+  payment_unique_code: number;
+  payment_total_amount: number;
+  payment_bank_name: string;
+  payment_account_number: string;
+  payment_account_holder: string;
+  payment_status: "WAITING_ADMIN_APPROVAL";
   source: string;
   user_agent: string;
 }
@@ -25,6 +33,12 @@ interface RegistrationResponse {
 }
 
 const SUCCESSFUL_REGISTRATION_ID_KEY = "kemahfilmmpj:successful-registration-id";
+
+export interface SuccessfulRegistration {
+  registrationId: string;
+  paymentTotalAmount?: number;
+  paymentStatus?: "WAITING_ADMIN_APPROVAL";
+}
 
 export async function submitRegistration(
   payload: RegistrationPayload,
@@ -78,20 +92,27 @@ export function fileToBase64(file: File): Promise<{ name: string; type: string; 
   });
 }
 
-export function rememberSuccessfulRegistration(registrationId: string) {
+export function rememberSuccessfulRegistration(registration: SuccessfulRegistration) {
   if (typeof sessionStorage === "undefined") return;
   try {
-    sessionStorage.setItem(SUCCESSFUL_REGISTRATION_ID_KEY, registrationId);
+    sessionStorage.setItem(SUCCESSFUL_REGISTRATION_ID_KEY, JSON.stringify(registration));
   } catch {
     // A successful backend submission must not fail when browser storage is unavailable.
   }
 }
 
-export function isSuccessfulRegistration(registrationId?: string) {
-  if (!registrationId || typeof sessionStorage === "undefined") return false;
+export function getSuccessfulRegistration(registrationId?: string) {
+  if (!registrationId || typeof sessionStorage === "undefined") return undefined;
   try {
-    return sessionStorage.getItem(SUCCESSFUL_REGISTRATION_ID_KEY) === registrationId;
+    const stored = sessionStorage.getItem(SUCCESSFUL_REGISTRATION_ID_KEY);
+    if (!stored) return undefined;
+
+    // Keep submissions from the previous frontend version valid during rollout.
+    if (stored === registrationId) return { registrationId };
+
+    const registration = JSON.parse(stored) as SuccessfulRegistration;
+    return registration.registrationId === registrationId ? registration : undefined;
   } catch {
-    return false;
+    return undefined;
   }
 }

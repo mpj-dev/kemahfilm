@@ -4,7 +4,8 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
-import { isSuccessfulRegistration } from "@/lib/registration";
+import { getSuccessfulRegistration, type SuccessfulRegistration } from "@/lib/registration";
+import { PAYMENT_CONFIG, formatRupiah } from "@/lib/payment";
 
 export const Route = createFileRoute("/sukses")({
   head: () => ({
@@ -22,11 +23,13 @@ export const Route = createFileRoute("/sukses")({
 
 function SuksesPage() {
   const { id } = useSearch({ from: "/sukses" });
-  const [isValidSuccess, setIsValidSuccess] = useState(false);
+  const [registration, setRegistration] = useState<SuccessfulRegistration>();
 
   useEffect(() => {
-    setIsValidSuccess(isSuccessfulRegistration(id));
+    setRegistration(getSuccessfulRegistration(id));
   }, [id]);
+
+  const isValidSuccess = Boolean(registration);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -55,28 +58,42 @@ function SuksesPage() {
           </h1>
           <p className="mt-3 text-muted-foreground leading-relaxed">
             {isValidSuccess
-              ? "Data dan berkas kamu telah diterima oleh panitia Kemah Film MPJ 2026. Panitia akan melakukan verifikasi dan menghubungi kamu melalui WhatsApp aktif yang telah didaftarkan."
+              ? "Pendaftaran dan bukti pembayaran kamu telah dikirim. Panitia akan memvalidasi pembayaran terlebih dahulu. ID resmi peserta akan diberikan setelah pembayaran di-ACC oleh admin."
               : "Belum ada konfirmasi pendaftaran pada sesi browser ini. Silakan isi formulir pendaftaran atau kembali ke beranda."}
           </p>
 
           {isValidSuccess && id && (
             <div className="mt-6 rounded-2xl bg-secondary p-5">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                ID Pendaftaran
+                Nomor Pendaftaran
               </p>
               <p className="mt-1 text-2xl font-bold text-primary-dark font-mono tracking-wider">
                 {id}
               </p>
               <p className="mt-2 text-xs text-muted-foreground">
-                Simpan ID ini untuk keperluan konfirmasi.
+                Simpan nomor ini untuk keperluan konfirmasi.
               </p>
+              <div className="mt-4 border-t border-border pt-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Status Validasi Pembayaran
+                </p>
+                <p className="mt-1 font-bold text-accent">Menunggu validasi pembayaran admin</p>
+                {registration?.paymentTotalAmount && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Total transfer:{" "}
+                    <span className="font-semibold text-primary-dark">
+                      {formatRupiah(registration.paymentTotalAmount)}
+                    </span>
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
             {isValidSuccess ? (
               <a
-                href="https://wa.me/6285124739344"
+                href={`https://wa.me/${PAYMENT_CONFIG.adminWhatsapp}`}
                 target="_blank"
                 rel="noreferrer"
                 className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 font-semibold text-accent-foreground hover:opacity-90 transition"

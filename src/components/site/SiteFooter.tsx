@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import logo from "@/assets/logo-mpj.png";
+import logo from "@/assets/logo-mpj-landscape-putih.png";
+import { PAYMENT_CONFIG } from "@/lib/payment";
 
 export function SiteFooter() {
   return (
@@ -7,10 +8,9 @@ export function SiteFooter() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 grid gap-10 md:grid-cols-3">
         <div>
           <div className="flex items-center gap-3">
-            <img src={logo} alt="MPJ" className="h-10 w-10 bg-white/95 rounded-lg p-1" />
+            <img src={logo} alt="Media Pondok Jawa Timur" className="h-10 w-auto object-contain" />
             <div>
               <p className="font-bold">Media Pondok Jawa Timur</p>
-              <p className="text-xs text-primary-foreground/70">Regional Malang</p>
             </div>
           </div>
           <p className="mt-4 text-sm text-primary-foreground/80 leading-relaxed">
@@ -22,7 +22,7 @@ export function SiteFooter() {
           <p className="text-sm text-primary-foreground/80">Admin Kemah Film MPJ</p>
           <p className="text-sm text-primary-foreground/80">WhatsApp: 0851-2473-9344</p>
           <a
-            href="https://wa.me/6285124739344"
+            href={`https://wa.me/${PAYMENT_CONFIG.adminWhatsapp}`}
             target="_blank"
             rel="noreferrer"
             className="mt-3 inline-flex items-center gap-2 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:opacity-90 transition"

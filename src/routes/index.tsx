@@ -17,11 +17,12 @@ import {
   MessageCircle,
   ArrowRight,
 } from "lucide-react";
-import logo from "@/assets/logo-mpj.png";
+import logo from "@/assets/logo-mpj-landscape-putih.png";
 import heroImg from "@/assets/hero-kemah.jpg";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Section } from "@/components/site/Section";
+import { PAYMENT_CONFIG } from "@/lib/payment";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -167,14 +168,9 @@ function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/40 via-primary-dark/60 to-primary-dark/90" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-20 sm:pt-24 sm:pb-28">
           <motion.div {...fadeUp} className="flex items-center gap-3 mb-6">
-            <img
-              src={logo}
-              alt="Logo MPJ"
-              className="h-12 w-12 bg-white/95 rounded-xl p-1.5 shadow-lg"
-            />
+            <img src={logo} alt="Media Pondok Jawa Timur" className="h-12 w-auto object-contain" />
             <div className="text-xs sm:text-sm">
               <p className="font-semibold tracking-wide">Media Pondok Jawa Timur</p>
-              <p className="text-primary-foreground/70">Regional Malang</p>
             </div>
           </motion.div>
 
@@ -494,7 +490,7 @@ function LandingPage() {
                   Daftar Sekarang <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
-                  href="https://wa.me/6285124739344"
+                  href={`https://wa.me/${PAYMENT_CONFIG.adminWhatsapp}`}
                   target="_blank"
                   rel="noreferrer"
                   className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 border border-white/25 px-7 py-3.5 font-semibold hover:bg-white/15 transition"
