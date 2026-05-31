@@ -13,28 +13,57 @@ export interface RegistrationPayload {
   bukti_pembayaran_file: { name: string; type: string; data: string } | null;
   agreement: boolean;
   website: string;
+  form_started_at: string;
   source: string;
   user_agent: string;
 }
 
+interface RegistrationResponse {
+  ok?: boolean;
+  registration_id?: string;
+  error?: string;
+}
+
+const SUCCESSFUL_REGISTRATION_ID_KEY = "kemahfilmmpj:successful-registration-id";
+
 export async function submitRegistration(
   payload: RegistrationPayload,
-): Promise<{ registration_id?: string }> {
-  const API_URL = import.meta.env.VITE_GAS_ENDPOINT as string | undefined;
-  if (!API_URL) {
-    // Placeholder fallback: generate a local mock id so flow can be tested before GAS is wired up.
+): Promise<{ registration_id: string }> {
+  const apiUrl = (import.meta.env.VITE_GAS_ENDPOINT as string | undefined)?.trim();
+
+  if (!apiUrl) {
+    if (!import.meta.env.DEV) {
+      throw new Error("Konfigurasi pendaftaran belum tersedia. Silakan hubungi panitia.");
+    }
+
+    // Local fallback keeps the UI testable before a development endpoint is configured.
     await new Promise((r) => setTimeout(r, 900));
     return { registration_id: "KFMPJ-" + Math.random().toString(36).slice(2, 8).toUpperCase() };
   }
-  const res = await fetch(API_URL, {
+
+  if (import.meta.env.DEV) {
+    console.info("[registration] GAS endpoint:", apiUrl);
+  }
+
+  const res = await fetch(apiUrl, {
     method: "POST",
-    headers: { "Content-Type": "text/plain;charset=UTF-8" },
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error("Gagal mengirim pendaftaran");
-  const body = (await res.json()) as { ok?: boolean; registration_id?: string; error?: string };
-  if (!body.ok) throw new Error(body.error || "Gagal mengirim pendaftaran");
-  return body;
+
+  if (import.meta.env.DEV) {
+    console.info("[registration] GAS response status:", res.status);
+  }
+
+  if (!res.ok) throw new Error("Gagal mengirim pendaftaran. Silakan coba lagi.");
+
+  const body = (await res.json()) as RegistrationResponse;
+  if (!body.ok) throw new Error(body.error || "Gagal mengirim pendaftaran. Silakan coba lagi.");
+  if (!body.registration_id) {
+    throw new Error("ID pendaftaran tidak diterima. Silakan hubungi panitia.");
+  }
+
+  return { registration_id: body.registration_id };
 }
 
 export function fileToBase64(file: File): Promise<{ name: string; type: string; data: string }> {
@@ -47,4 +76,22 @@ export function fileToBase64(file: File): Promise<{ name: string; type: string; 
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+export function rememberSuccessfulRegistration(registrationId: string) {
+  if (typeof sessionStorage === "undefined") return;
+  try {
+    sessionStorage.setItem(SUCCESSFUL_REGISTRATION_ID_KEY, registrationId);
+  } catch {
+    // A successful backend submission must not fail when browser storage is unavailable.
+  }
+}
+
+export function isSuccessfulRegistration(registrationId?: string) {
+  if (!registrationId || typeof sessionStorage === "undefined") return false;
+  try {
+    return sessionStorage.getItem(SUCCESSFUL_REGISTRATION_ID_KEY) === registrationId;
+  } catch {
+    return false;
+  }
 }

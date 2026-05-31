@@ -11,7 +11,11 @@ import {
 } from "lucide-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
-import { submitRegistration, fileToBase64 } from "@/lib/registration";
+import {
+  submitRegistration,
+  fileToBase64,
+  rememberSuccessfulRegistration,
+} from "@/lib/registration";
 
 export const Route = createFileRoute("/daftar")({
   head: () => ({
@@ -45,6 +49,7 @@ type FormState = {
 
 const STEPS = ["Identitas", "Kemampuan", "Pengalaman", "Berkas", "Persetujuan"];
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_FILE_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 
 const initial: FormState = {
   nama: "",
@@ -72,10 +77,21 @@ function isUrl(s: string) {
   }
 }
 
+function validateUpload(file: File | null, label: string) {
+  if (!file) return `${label} wajib dipilih`;
+  if (file.size <= 0) return `${label} tidak boleh kosong`;
+  if (file.size > MAX_FILE_SIZE) return `Ukuran ${label.toLowerCase()} maksimal 5 MB`;
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    return `Format ${label.toLowerCase()} harus PDF, JPG, atau PNG`;
+  }
+  return undefined;
+}
+
 function DaftarPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<FormState>(initial);
+  const [formStartedAt] = useState(() => new Date().toISOString());
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -107,12 +123,10 @@ function DaftarPage() {
     if (s === 3) {
       if (!data.link_karya.trim() || !isUrl(data.link_karya))
         e.link_karya = "Harus berupa URL valid";
-      if (!data.surat_delegasi_file) e.surat_delegasi_file = "File surat delegasi wajib";
-      else if (data.surat_delegasi_file.size > MAX_FILE_SIZE)
-        e.surat_delegasi_file = "Ukuran file maksimal 5 MB";
-      if (!data.bukti_pembayaran_file) e.bukti_pembayaran_file = "File bukti pembayaran wajib";
-      else if (data.bukti_pembayaran_file.size > MAX_FILE_SIZE)
-        e.bukti_pembayaran_file = "Ukuran file maksimal 5 MB";
+      const suratDelegasiError = validateUpload(data.surat_delegasi_file, "Surat delegasi");
+      const buktiPembayaranError = validateUpload(data.bukti_pembayaran_file, "Bukti pembayaran");
+      if (suratDelegasiError) e.surat_delegasi_file = suratDelegasiError;
+      if (buktiPembayaranError) e.bukti_pembayaran_file = buktiPembayaranError;
     }
     if (s === 4) {
       if (!data.agreement) e.agreement = "Wajib menyetujui ketentuan";
@@ -147,9 +161,11 @@ function DaftarPage() {
         bukti_pembayaran_file: bukti,
         agreement: data.agreement,
         website: data.website,
+        form_started_at: formStartedAt,
         source: "kemahfilm.mediapondokjatim.id",
         user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "",
       });
+      rememberSuccessfulRegistration(res.registration_id);
       navigate({ to: "/sukses", search: { id: res.registration_id } });
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.");
