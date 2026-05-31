@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { getSuccessfulRegistration, type SuccessfulRegistration } from "@/lib/registration";
-import { PAYMENT_CONFIG, formatRupiah } from "@/lib/payment";
+import { PAYMENT_CONFIG, formatRupiah, getPaymentTier } from "@/lib/payment";
 
 export const Route = createFileRoute("/sukses")({
   head: () => ({
@@ -74,7 +74,29 @@ function SuksesPage() {
                 Simpan nomor ini untuk keperluan konfirmasi.
               </p>
               <div className="mt-4 border-t border-border pt-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {registration?.delegationStatus && (
+                  <>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Status Dokumen Delegasi
+                    </p>
+                    <p className="mt-1 font-semibold text-primary-dark">
+                      {registration.delegationStatus === "HAS_DELEGATION"
+                        ? "Memiliki surat delegasi"
+                        : "Tidak memiliki surat delegasi"}
+                    </p>
+                  </>
+                )}
+                {registration?.paymentTier && (
+                  <>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Kategori Pembayaran
+                    </p>
+                    <p className="mt-1 font-semibold text-primary-dark">
+                      {getPaymentTier(registration.paymentTier)?.label}
+                    </p>
+                  </>
+                )}
+                <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Status Validasi Pembayaran
                 </p>
                 <p className="mt-1 font-bold text-accent">Menunggu validasi pembayaran admin</p>

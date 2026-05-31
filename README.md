@@ -50,8 +50,15 @@ accountNumber: "ISI_NOMOR_REKENING",
 accountHolder: "ISI_NAMA_PENERIMA",
 ```
 
-Form memblokir submit selama placeholder tersebut belum diganti. Nominal transfer
-terdiri dari biaya kategori dan kode unik tiga digit terakhir WhatsApp peserta.
+Form memblokir submit selama placeholder tersebut belum diganti. Peserta memilih
+status dokumen delegasi, bukan kategori pembayaran. Peserta dengan surat delegasi
+mendapat tarif gelombang otomatis berdasarkan tanggal WIB: Gelombang 1 sebelum
+15 Juni 2026, Gelombang 2 pada 15–25 Juni 2026, dan Gelombang 3 / OTS mulai
+26 Juni 2026. Peserta tanpa surat delegasi otomatis memakai kategori Peserta
+Umum `Rp1.000.000`.
+
+Nominal transfer terdiri dari biaya kategori dan kode unik tiga digit terakhir
+WhatsApp peserta. Nomor WhatsApp berawalan `08` dinormalisasi menjadi `628`.
 Jika tiga digit terakhir adalah `000`, kode unik diubah menjadi `111`.
 
 Contoh: Gelombang 1 `Rp285.000` dengan kode unik `047` menghasilkan total
@@ -69,9 +76,13 @@ Malang.
 ## Smoke Test Produksi
 
 1. Buka landing page dan `/daftar` dari domain produksi.
-2. Submit data valid dengan dua file kecil PDF, JPG, atau PNG.
-3. Pastikan form redirect ke `/sukses` dan menampilkan ID pendaftaran.
-4. Pastikan data masuk ke tab `REGISTRATIONS` di Google Sheets.
-5. Pastikan file masuk ke folder Google Drive `Surat Delegasi` dan
+2. Uji flow delegasi dengan surat delegasi dan bukti pembayaran berformat PDF,
+   JPG, atau PNG.
+3. Uji flow tanpa surat delegasi dan pastikan kategori otomatis menjadi Peserta
+   Umum.
+4. Pastikan form redirect ke `/sukses` dan menampilkan ID pendaftaran.
+5. Pastikan data masuk ke tab `REGISTRATIONS` di Google Sheets.
+6. Pastikan file delegasi hanya masuk ke folder Google Drive `Surat Delegasi`
+   jika diunggah, dan bukti pembayaran masuk ke folder
    `Bukti Pembayaran`.
-6. Submit ulang nomor WhatsApp yang sama dan pastikan throttle 10 menit tampil.
+7. Submit ulang nomor WhatsApp yang sama dan pastikan throttle 10 menit tampil.

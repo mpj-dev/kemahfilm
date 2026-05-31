@@ -15,17 +15,21 @@ export const PAYMENT_TIERS = [
 ] as const;
 
 export type PaymentTierId = (typeof PAYMENT_TIERS)[number]["id"];
+export type DelegationStatus = "HAS_DELEGATION" | "NO_DELEGATION";
 
 export function getPaymentTier(id: string) {
   return PAYMENT_TIERS.find((tier) => tier.id === id);
 }
 
-export function normalizePaymentWhatsapp(value: string) {
-  return value.replace(/\D/g, "");
+export function normalizeWhatsapp(value: string) {
+  let number = value.replace(/\D/g, "");
+  if (number.startsWith("0")) number = `62${number.slice(1)}`;
+  if (number.startsWith("620")) number = `62${number.slice(3)}`;
+  return number;
 }
 
-export function getPaymentUniqueCode(whatsapp: string) {
-  const digits = normalizePaymentWhatsapp(whatsapp);
+export function createPaymentUniqueCode(whatsapp: string) {
+  const digits = normalizeWhatsapp(whatsapp);
   const code = Number(digits.slice(-3));
   return code === 0 ? 111 : code;
 }
@@ -46,11 +50,25 @@ export function isPaymentConfigReady() {
   ].every((value) => value.trim() && !value.startsWith("ISI_"));
 }
 
-export function calculatePaymentDetails(paymentTier: string, whatsapp: string) {
-  const tier = getPaymentTier(paymentTier);
-  if (!tier) return undefined;
+export function getCurrentPaymentTier(delegationStatus: DelegationStatus, date = new Date()) {
+  if (delegationStatus === "NO_DELEGATION") return getPaymentTier("GENERAL");
 
-  const uniqueCode = getPaymentUniqueCode(whatsapp);
+  const jakartaDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+  if (jakartaDate >= "2026-06-26") return getPaymentTier("WAVE_3_OTS");
+  if (jakartaDate >= "2026-06-15") return getPaymentTier("WAVE_2");
+  return getPaymentTier("WAVE_1");
+}
+
+export function calculatePaymentSummary(delegationStatus: DelegationStatus | "", whatsapp: string) {
+  if (!delegationStatus) return undefined;
+  const tier = getCurrentPaymentTier(delegationStatus);
+  if (!tier) return undefined;
+  const uniqueCode = createPaymentUniqueCode(whatsapp);
   return {
     tier,
     uniqueCode,

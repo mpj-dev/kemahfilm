@@ -7,11 +7,8 @@ export function SiteFooter() {
     <footer className="mt-24 bg-primary-dark text-primary-foreground">
       <div className="mx-auto max-w-6xl px-4 sm:px-6 py-12 grid gap-10 md:grid-cols-3">
         <div>
-          <div className="flex items-center gap-3">
+          <div>
             <img src={logo} alt="Media Pondok Jawa Timur" className="h-10 w-auto object-contain" />
-            <div>
-              <p className="font-bold">Media Pondok Jawa Timur</p>
-            </div>
           </div>
           <p className="mt-4 text-sm text-primary-foreground/80 leading-relaxed">
             Ekosistem kreator santri berbasis film dan media di Jawa Timur.

@@ -20,11 +20,11 @@ import {
 } from "@/lib/registration";
 import {
   PAYMENT_CONFIG,
-  PAYMENT_TIERS,
-  calculatePaymentDetails,
+  calculatePaymentSummary,
   formatPaymentUniqueCode,
   formatRupiah,
   isPaymentConfigReady,
+  type DelegationStatus,
 } from "@/lib/payment";
 
 export const Route = createFileRoute("/daftar")({
@@ -53,7 +53,7 @@ type FormState = {
   link_karya: string;
   surat_delegasi_file: File | null;
   bukti_pembayaran_file: File | null;
-  payment_tier: string;
+  delegation_status: DelegationStatus | "";
   agreement: boolean;
   website: string;
 };
@@ -75,7 +75,7 @@ const initial: FormState = {
   link_karya: "",
   surat_delegasi_file: null,
   bukti_pembayaran_file: null,
-  payment_tier: "",
+  delegation_status: "",
   agreement: false,
   website: "",
 };
@@ -89,8 +89,8 @@ function isUrl(s: string) {
   }
 }
 
-function validateUpload(file: File | null, label: string) {
-  if (!file) return `${label} wajib dipilih`;
+function validateUpload(file: File | null, label: string, required = true) {
+  if (!file) return required ? `${label} wajib dipilih` : undefined;
   if (file.size <= 0) return `${label} tidak boleh kosong`;
   if (file.size > MAX_FILE_SIZE) return `Ukuran ${label.toLowerCase()} maksimal 5 MB`;
   if (!ALLOWED_FILE_TYPES.includes(file.type)) {
@@ -108,11 +108,15 @@ function DaftarPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
-  const paymentDetails = calculatePaymentDetails(data.payment_tier, data.whatsapp);
+  const paymentDetails = calculatePaymentSummary(data.delegation_status, data.whatsapp);
   const paymentConfigReady = isPaymentConfigReady();
 
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) => {
-    setData((d) => ({ ...d, [k]: v }));
+    setData((d) => ({
+      ...d,
+      [k]: v,
+      ...(k === "delegation_status" && v === "NO_DELEGATION" ? { surat_delegasi_file: null } : {}),
+    }));
     setErrors((e) => ({ ...e, [k]: "" }));
   };
 
@@ -138,11 +142,15 @@ function DaftarPage() {
     if (s === 3) {
       if (!data.link_karya.trim() || !isUrl(data.link_karya))
         e.link_karya = "Harus berupa URL valid";
-      if (!data.payment_tier) e.payment_tier = "Pilih kategori pendaftaran";
+      if (!data.delegation_status) e.delegation_status = "Pilih status surat delegasi";
       if (!paymentConfigReady) e.payment_config = "Informasi rekening belum tersedia";
       if (paymentDetails && paymentDetails.totalAmount <= paymentDetails.tier.amount)
-        e.payment_tier = "Nominal pembayaran tidak valid";
-      const suratDelegasiError = validateUpload(data.surat_delegasi_file, "Surat delegasi");
+        e.delegation_status = "Nominal pembayaran tidak valid";
+      const suratDelegasiError = validateUpload(
+        data.surat_delegasi_file,
+        "Surat delegasi",
+        data.delegation_status === "HAS_DELEGATION",
+      );
       const buktiPembayaranError = validateUpload(data.bukti_pembayaran_file, "Bukti pembayaran");
       if (suratDelegasiError) e.surat_delegasi_file = suratDelegasiError;
       if (buktiPembayaranError) e.bukti_pembayaran_file = buktiPembayaranError;
@@ -181,6 +189,7 @@ function DaftarPage() {
         kendala_produksi: data.kendala_produksi.trim(),
         motivasi: data.motivasi.trim(),
         link_karya: data.link_karya.trim(),
+        delegation_status: data.delegation_status as DelegationStatus,
         surat_delegasi_file: surat,
         bukti_pembayaran_file: bukti,
         agreement: data.agreement,
@@ -199,6 +208,8 @@ function DaftarPage() {
       });
       rememberSuccessfulRegistration({
         registrationId: res.registration_id,
+        delegationStatus: data.delegation_status as DelegationStatus,
+        paymentTier: paymentDetails.tier.id,
         paymentTotalAmount: paymentDetails.totalAmount,
         paymentStatus: "WAITING_ADMIN_APPROVAL",
       });
@@ -430,29 +441,45 @@ function DaftarPage() {
                       placeholder="https://..."
                     />
                   </Field>
-                  <FileField
-                    label="Surat delegasi dari media/pesantren"
-                    hint="Format: PDF, JPG, atau PNG"
-                    file={data.surat_delegasi_file}
-                    onChange={(f) => update("surat_delegasi_file", f)}
-                    error={errors.surat_delegasi_file}
-                    accept=".pdf,.jpg,.jpeg,.png"
-                  />
-                  <Field label="Kategori Pendaftaran" error={errors.payment_tier}>
+                  <Field label="Dokumen Delegasi" error={errors.delegation_status}>
                     <div className="grid gap-2">
-                      {PAYMENT_TIERS.map((tier) => (
-                        <RadioCard
-                          key={tier.id}
-                          label={`${tier.label} — ${formatRupiah(tier.amount)}`}
-                          checked={data.payment_tier === tier.id}
-                          onChange={() => update("payment_tier", tier.id)}
-                        />
-                      ))}
+                      <RadioCard
+                        label="Saya memiliki surat delegasi dari pesantren/media pondok"
+                        checked={data.delegation_status === "HAS_DELEGATION"}
+                        onChange={() => update("delegation_status", "HAS_DELEGATION")}
+                      />
+                      <RadioCard
+                        label="Saya tidak memiliki surat delegasi"
+                        checked={data.delegation_status === "NO_DELEGATION"}
+                        onChange={() => update("delegation_status", "NO_DELEGATION")}
+                      />
                     </div>
+                    <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
+                      Surat delegasi digunakan untuk menentukan kategori biaya pendaftaran. Jika
+                      tidak memiliki surat delegasi, pendaftaran tetap dapat dilanjutkan dengan
+                      kategori Peserta Umum.
+                    </p>
                   </Field>
+                  {data.delegation_status === "HAS_DELEGATION" && (
+                    <FileField
+                      label="Surat delegasi dari media/pesantren"
+                      hint="Wajib diunggah. Format: PDF, JPG, atau PNG"
+                      file={data.surat_delegasi_file}
+                      onChange={(f) => update("surat_delegasi_file", f)}
+                      error={errors.surat_delegasi_file}
+                      accept=".pdf,.jpg,.jpeg,.png"
+                    />
+                  )}
+                  {data.delegation_status === "NO_DELEGATION" && (
+                    <p className="rounded-xl bg-secondary p-3 text-sm text-muted-foreground">
+                      Tidak masalah. Jika tidak memiliki surat delegasi, pendaftaran tetap dapat
+                      dilanjutkan dengan kategori Peserta Umum.
+                    </p>
+                  )}
                   <PaymentCard
                     paymentConfigReady={paymentConfigReady}
                     paymentDetails={paymentDetails}
+                    delegationStatus={data.delegation_status}
                     copied={copied}
                     onCopy={copyPaymentValue}
                   />
@@ -557,11 +584,13 @@ function DaftarPage() {
 function PaymentCard({
   paymentConfigReady,
   paymentDetails,
+  delegationStatus,
   copied,
   onCopy,
 }: {
   paymentConfigReady: boolean;
-  paymentDetails: ReturnType<typeof calculatePaymentDetails>;
+  paymentDetails: ReturnType<typeof calculatePaymentSummary>;
+  delegationStatus: DelegationStatus | "";
   copied: string | null;
   onCopy: (label: string, value: string) => void;
 }) {
@@ -571,6 +600,11 @@ function PaymentCard({
       <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
         Silakan transfer sesuai nominal total berikut. Tiga angka terakhir merupakan kode unik untuk
         memudahkan validasi pembayaran oleh panitia.
+      </p>
+      <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
+        Gelombang pendaftaran otomatis mengikuti tanggal pendaftaran berdasarkan waktu Indonesia
+        Barat. Untuk peserta tanpa surat delegasi, kategori pembayaran otomatis menjadi Peserta
+        Umum.
       </p>
 
       {!paymentConfigReady ? (
@@ -584,24 +618,19 @@ function PaymentCard({
         </div>
       ) : (
         <div className="mt-4 grid gap-2 text-sm">
-          <PaymentRow label="Bank" value={PAYMENT_CONFIG.bankName} />
           <PaymentRow
-            label="Nomor Rekening"
-            value={PAYMENT_CONFIG.accountNumber}
-            copyLabel="rekening"
-            copied={copied}
-            onCopy={onCopy}
-          />
-          <PaymentRow
-            label="Atas Nama"
-            value={PAYMENT_CONFIG.accountHolder}
-            copyLabel="penerima"
-            copied={copied}
-            onCopy={onCopy}
+            label="Status Dokumen Delegasi"
+            value={
+              delegationStatus === "HAS_DELEGATION"
+                ? "Memiliki surat delegasi"
+                : delegationStatus === "NO_DELEGATION"
+                  ? "Tidak memiliki surat delegasi"
+                  : "Pilih status dokumen dahulu"
+            }
           />
           <PaymentRow
             label="Kategori"
-            value={paymentDetails?.tier.label ?? "Pilih kategori dahulu"}
+            value={paymentDetails?.tier.label ?? "Pilih status dokumen dahulu"}
           />
           <PaymentRow
             label="Biaya Pendaftaran"
@@ -619,6 +648,21 @@ function PaymentCard({
             copied={copied}
             onCopy={onCopy}
             strong
+          />
+          <PaymentRow label="Bank" value={PAYMENT_CONFIG.bankName} />
+          <PaymentRow
+            label="Nomor Rekening"
+            value={PAYMENT_CONFIG.accountNumber}
+            copyLabel="rekening"
+            copied={copied}
+            onCopy={onCopy}
+          />
+          <PaymentRow
+            label="Atas Nama"
+            value={PAYMENT_CONFIG.accountHolder}
+            copyLabel="penerima"
+            copied={copied}
+            onCopy={onCopy}
           />
         </div>
       )}

@@ -133,7 +133,7 @@ const faqs = [
   },
   {
     q: "Bagaimana upload surat delegasi?",
-    a: "Unggah surat delegasi resmi dari media/pesantren dalam format PDF, JPG, atau PNG saat mengisi formulir pendaftaran.",
+    a: "Surat delegasi resmi dari media/pesantren wajib diunggah dalam format PDF, JPG, atau PNG jika kamu mendaftar sebagai delegasi. Jika tidak memiliki surat delegasi, pendaftaran tetap dapat dilanjutkan sebagai Peserta Umum.",
   },
   {
     q: "Bagaimana verifikasi pembayaran?",
@@ -167,11 +167,8 @@ function LandingPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-primary-dark/40 via-primary-dark/60 to-primary-dark/90" />
         <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-16 pb-20 sm:pt-24 sm:pb-28">
-          <motion.div {...fadeUp} className="flex items-center gap-3 mb-6">
+          <motion.div {...fadeUp} className="mb-6">
             <img src={logo} alt="Media Pondok Jawa Timur" className="h-12 w-auto object-contain" />
-            <div className="text-xs sm:text-sm">
-              <p className="font-semibold tracking-wide">Media Pondok Jawa Timur</p>
-            </div>
           </motion.div>
 
           <motion.span

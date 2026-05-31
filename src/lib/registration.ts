@@ -9,6 +9,7 @@ export interface RegistrationPayload {
   kendala_produksi: string;
   motivasi: string;
   link_karya: string;
+  delegation_status: "HAS_DELEGATION" | "NO_DELEGATION";
   surat_delegasi_file: { name: string; type: string; data: string } | null;
   bukti_pembayaran_file: { name: string; type: string; data: string } | null;
   agreement: boolean;
@@ -36,6 +37,8 @@ const SUCCESSFUL_REGISTRATION_ID_KEY = "kemahfilmmpj:successful-registration-id"
 
 export interface SuccessfulRegistration {
   registrationId: string;
+  delegationStatus?: "HAS_DELEGATION" | "NO_DELEGATION";
+  paymentTier?: "WAVE_1" | "WAVE_2" | "WAVE_3_OTS" | "GENERAL";
   paymentTotalAmount?: number;
   paymentStatus?: "WAITING_ADMIN_APPROVAL";
 }

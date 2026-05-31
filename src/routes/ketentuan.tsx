@@ -29,7 +29,7 @@ const items = [
   },
   {
     title: "Surat Delegasi",
-    desc: "Mengunggah surat delegasi resmi dari media/pesantren (PDF/JPG/PNG).",
+    desc: "Wajib diunggah bagi delegasi resmi media/pesantren (PDF/JPG/PNG). Peserta tanpa surat delegasi tetap dapat mendaftar sebagai Peserta Umum.",
   },
   {
     title: "Technical Meeting",
