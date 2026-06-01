@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import logo from "@/assets/logo-kemahfilm.png";
+import { JUKNIS_URL } from "@/lib/links";
 
 export function SiteHeader() {
   return (
@@ -27,9 +28,14 @@ export function SiteHeader() {
           <Link to="/" hash="timeline" className="hover:text-primary">
             Timeline
           </Link>
-          <Link to="/ketentuan" className="hover:text-primary">
-            Ketentuan
-          </Link>
+          <a
+            href={JUKNIS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary"
+          >
+            Juknis
+          </a>
         </nav>
         <Link
           to="/daftar"

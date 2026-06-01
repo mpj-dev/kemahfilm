@@ -22,6 +22,7 @@ import heroImg from "@/assets/hero-kemah.jpg";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Section } from "@/components/site/Section";
+import { JUKNIS_URL } from "@/lib/links";
 import { PAYMENT_CONFIG } from "@/lib/payment";
 
 export const Route = createFileRoute("/")({
@@ -103,10 +104,34 @@ const hak = [
 ];
 
 const biaya = [
-  { label: "Gelombang 1", price: "285.000", note: "1–14 Juni 2026", popular: false },
-  { label: "Gelombang 2", price: "335.000", note: "15–25 Juni 2026", popular: true },
-  { label: "Gelombang 3 / OTS", price: "400.000", note: "Setelah 25 Juni 2026", popular: false },
-  { label: "Peserta Umum", price: "1.000.000", note: "Non-santri / undangan", popular: false },
+  {
+    label: "Gelombang 1",
+    badge: "Paling Hemat",
+    price: "285.000",
+    note: "1–14 Juni 2026",
+    variant: "highlight",
+  },
+  {
+    label: "Gelombang 2",
+    badge: "Reguler",
+    price: "335.000",
+    note: "15–25 Juni 2026",
+    variant: "default",
+  },
+  {
+    label: "Gelombang 3 / OTS",
+    badge: "Periode Terakhir",
+    price: "400.000",
+    note: "Setelah 25 Juni 2026",
+    variant: "default",
+  },
+  {
+    label: "Peserta Umum",
+    badge: "Tanpa Surat Delegasi",
+    price: "1.000.000",
+    description: "Untuk pendaftar yang tidak memiliki surat delegasi dari pesantren/media pondok.",
+    variant: "general",
+  },
 ];
 
 const timeline = [
@@ -223,18 +248,20 @@ function LandingPage() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mt-9 flex flex-col sm:flex-row gap-3"
           >
-            <Link
-              to="/daftar"
+            <a
+              href={JUKNIS_URL}
+              target="_blank"
+              rel="noopener noreferrer"
               className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-7 py-3.5 font-bold text-accent-foreground shadow-soft hover:bg-accent/90 transition-all hover:scale-[1.02]"
             >
-              Daftar Sekarang
+              Lihat Juknis
               <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
+            </a>
             <Link
-              to="/ketentuan"
+              to="/daftar"
               className="inline-flex items-center justify-center gap-2 rounded-full bg-white/10 border border-white/25 px-7 py-3.5 font-semibold text-primary-foreground hover:bg-white/15 transition backdrop-blur"
             >
-              Lihat Ketentuan
+              Daftar Sekarang
             </Link>
           </motion.div>
         </div>
@@ -336,8 +363,8 @@ function LandingPage() {
       <Section
         id="biaya"
         eyebrow="Biaya Pendaftaran"
-        title="Pilih Gelombangmu"
-        description="Semakin awal mendaftar, semakin hemat. Kuota terbatas per gelombang."
+        title="Biaya Pendaftaran"
+        description="Biaya mengikuti periode pendaftaran dan status surat delegasi. Daftar lebih awal untuk mendapatkan biaya paling hemat."
       >
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {biaya.map((b, i) => (
@@ -348,32 +375,62 @@ function LandingPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
               className={`relative rounded-2xl p-6 shadow-card border ${
-                b.popular
+                b.variant === "highlight"
                   ? "bg-gradient-hero text-primary-foreground border-accent/40"
-                  : "bg-card border-border/40"
+                  : b.variant === "general"
+                    ? "bg-secondary/60 border-primary/20"
+                    : "bg-card border-border/40"
               }`}
             >
-              {b.popular && (
-                <span className="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
-                  Populer
-                </span>
-              )}
-              <p className={`text-sm font-semibold ${b.popular ? "text-accent" : "text-primary"}`}>
+              <span
+                className={`inline-flex rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                  b.variant === "highlight"
+                    ? "bg-accent text-accent-foreground"
+                    : b.variant === "general"
+                      ? "bg-primary/10 text-primary-dark"
+                      : "bg-secondary text-primary"
+                }`}
+              >
+                {b.badge}
+              </span>
+              <p
+                className={`mt-4 text-sm font-semibold ${
+                  b.variant === "highlight" ? "text-accent" : "text-primary"
+                }`}
+              >
                 {b.label}
               </p>
               <p
-                className={`mt-3 text-3xl font-extrabold ${b.popular ? "text-primary-foreground" : "text-primary-dark"}`}
+                className={`mt-3 text-3xl font-extrabold ${
+                  b.variant === "highlight" ? "text-primary-foreground" : "text-primary-dark"
+                }`}
               >
                 Rp{b.price}
               </p>
-              <p
-                className={`mt-1 text-xs ${b.popular ? "text-primary-foreground/70" : "text-muted-foreground"}`}
-              >
-                {b.note}
-              </p>
+              {b.note && (
+                <p
+                  className={`mt-1 text-xs ${
+                    b.variant === "highlight"
+                      ? "text-primary-foreground/70"
+                      : "text-muted-foreground"
+                  }`}
+                >
+                  {b.note}
+                </p>
+              )}
+              {b.description && (
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                  {b.description}
+                </p>
+              )}
             </motion.div>
           ))}
         </div>
+        <p className="mt-6 text-sm leading-relaxed text-muted-foreground">
+          Pada form pendaftaran, gelombang biaya akan dihitung otomatis berdasarkan tanggal
+          pendaftaran. Jika tidak memiliki surat delegasi, sistem otomatis menggunakan kategori
+          Peserta Umum.
+        </p>
         <div className="mt-8 flex justify-center">
           <Link
             to="/daftar"

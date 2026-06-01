@@ -3,6 +3,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Section } from "@/components/site/Section";
 import { CheckCircle2, ArrowLeft } from "lucide-react";
+import { JUKNIS_URL } from "@/lib/links";
 
 export const Route = createFileRoute("/ketentuan")({
   head: () => ({
@@ -75,9 +76,17 @@ function KetentuanPage() {
           ))}
         </div>
         <div className="mt-10 flex flex-col sm:flex-row gap-3">
+          <a
+            href={JUKNIS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-dark transition"
+          >
+            Buka Juknis
+          </a>
           <Link
             to="/daftar"
-            className="inline-flex items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-dark transition"
+            className="inline-flex items-center justify-center gap-2 rounded-full bg-secondary px-6 py-3 font-semibold text-secondary-foreground hover:bg-secondary/80 transition"
           >
             Lanjut Daftar
           </Link>

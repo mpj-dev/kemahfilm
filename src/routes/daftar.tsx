@@ -26,6 +26,7 @@ import {
   isPaymentConfigReady,
   type DelegationStatus,
 } from "@/lib/payment";
+import { JUKNIS_URL } from "@/lib/links";
 
 export const Route = createFileRoute("/daftar")({
   head: () => ({
@@ -156,7 +157,9 @@ function DaftarPage() {
       if (buktiPembayaranError) e.bukti_pembayaran_file = buktiPembayaranError;
     }
     if (s === 4) {
-      if (!data.agreement) e.agreement = "Wajib menyetujui ketentuan";
+      if (!data.agreement) {
+        e.agreement = "Wajib mencentang persetujuan JUKNIS sebelum mengirim pendaftaran";
+      }
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -259,6 +262,20 @@ function DaftarPage() {
           <p className="mt-2 text-muted-foreground">
             Lengkapi {STEPS.length} langkah berikut. Estimasi 5–7 menit.
           </p>
+        </div>
+
+        <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+          <p className="text-sm leading-relaxed text-foreground/85">
+            Sebelum mengisi formulir, pastikan kamu sudah membaca JUKNIS Kemah Film MPJ 2026.
+          </p>
+          <a
+            href={JUKNIS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex shrink-0 items-center justify-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary-dark sm:mt-0"
+          >
+            Buka Juknis
+          </a>
         </div>
 
         {/* Progress */}
@@ -524,7 +541,7 @@ function DaftarPage() {
                       className="mt-1 h-5 w-5 accent-primary"
                     />
                     <span className="text-sm font-medium text-foreground">
-                      Saya menyetujui seluruh ketentuan di atas.
+                      Saya sudah membaca dan memahami JUKNIS Kemah Film MPJ 2026.
                     </span>
                   </label>
                   {errors.agreement && (
