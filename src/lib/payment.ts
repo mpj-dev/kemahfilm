@@ -14,8 +14,28 @@ export const PAYMENT_TIERS = [
   { id: "GENERAL", label: "Peserta Umum", amount: 1_000_000 },
 ] as const;
 
+export const REGIONAL_OPTIONS = [
+  "Regional Dapil IV",
+  "Regional Situbondo-Bondowoso",
+  "Regional SidoPas",
+  "Regional Banyuwangi",
+  "Regional Malang Raya",
+  "Regional Blitar",
+  "Regional Ojo Lamban",
+  "Regional Jombang",
+  "Regional Kediri",
+  "Regional Nganjuk",
+  "Regional Plat AE",
+  "Regional Madura",
+  "Regional Tulungagung-Trenggalek",
+  "Regional Mojokerto",
+  "Regional Probolinggo",
+  "Regional SBY-GRESIK",
+] as const;
+
 export type PaymentTierId = (typeof PAYMENT_TIERS)[number]["id"];
 export type DelegationStatus = "HAS_DELEGATION" | "NO_DELEGATION";
+export type DelegationType = "MPJ_REGIONAL" | "OTHER_COMMUNITY" | "NO_DELEGATION";
 
 export function getPaymentTier(id: string) {
   return PAYMENT_TIERS.find((tier) => tier.id === id);
@@ -50,8 +70,12 @@ export function isPaymentConfigReady() {
   ].every((value) => value.trim() && !value.startsWith("ISI_"));
 }
 
-export function getCurrentPaymentTier(delegationStatus: DelegationStatus, date = new Date()) {
-  if (delegationStatus === "NO_DELEGATION") return getPaymentTier("GENERAL");
+export function getLegacyDelegationStatus(delegationType: DelegationType): DelegationStatus {
+  return delegationType === "NO_DELEGATION" ? "NO_DELEGATION" : "HAS_DELEGATION";
+}
+
+export function getCurrentPaymentTier(delegationType: DelegationType, date = new Date()) {
+  if (delegationType === "NO_DELEGATION") return getPaymentTier("GENERAL");
 
   const jakartaDate = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jakarta",
@@ -64,9 +88,9 @@ export function getCurrentPaymentTier(delegationStatus: DelegationStatus, date =
   return getPaymentTier("WAVE_1");
 }
 
-export function calculatePaymentSummary(delegationStatus: DelegationStatus | "", whatsapp: string) {
-  if (!delegationStatus) return undefined;
-  const tier = getCurrentPaymentTier(delegationStatus);
+export function calculatePaymentSummary(delegationType: DelegationType | "", whatsapp: string) {
+  if (!delegationType) return undefined;
+  const tier = getCurrentPaymentTier(delegationType);
   if (!tier) return undefined;
   const uniqueCode = createPaymentUniqueCode(whatsapp);
   return {

@@ -16,7 +16,7 @@ export function SiteFooter() {
             />
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-primary-foreground/80">
-            Ruang belajar, produksi, dan kolaborasi film bagi pegiat media pondok Jawa Timur.
+            Ruang belajar, produksi, dan kolaborasi film bagi sineas santri pegiat media pondok pesantren Nusantara.
           </p>
         </div>
         <div>
@@ -61,7 +61,7 @@ export function SiteFooter() {
                 rel="noreferrer"
                 className="transition hover:text-accent"
               >
-                Media Sosial MPJ
+                Daftar MPJ
               </a>
             </li>
           </ul>

@@ -74,15 +74,35 @@ function SuksesPage() {
                 Simpan nomor ini untuk keperluan konfirmasi.
               </p>
               <div className="mt-4 border-t border-border pt-4">
-                {registration?.delegationStatus && (
+                {registration?.delegationType && (
                   <>
                     <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Status Dokumen Delegasi
+                      Status Delegasi
                     </p>
                     <p className="mt-1 font-semibold text-primary-dark">
-                      {registration.delegationStatus === "HAS_DELEGATION"
-                        ? "Memiliki surat delegasi"
-                        : "Tidak memiliki surat delegasi"}
+                      {registration.delegationType === "MPJ_REGIONAL"
+                        ? "Dari Regional MPJ"
+                        : registration.delegationType === "OTHER_COMMUNITY"
+                          ? "Dari komunitas/lembaga lain"
+                          : "Tidak memiliki surat delegasi"}
+                    </p>
+                  </>
+                )}
+                {registration?.regional && (
+                  <>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Regional
+                    </p>
+                    <p className="mt-1 font-semibold text-primary-dark">{registration.regional}</p>
+                  </>
+                )}
+                {registration?.communityName && (
+                  <>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                      Nama Komunitas/Lembaga
+                    </p>
+                    <p className="mt-1 font-semibold text-primary-dark">
+                      {registration.communityName}
                     </p>
                   </>
                 )}

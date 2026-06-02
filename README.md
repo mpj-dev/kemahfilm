@@ -51,7 +51,9 @@ accountHolder: "ISI_NAMA_PENERIMA",
 ```
 
 Form memblokir submit selama placeholder tersebut belum diganti. Peserta memilih
-status dokumen delegasi, bukan kategori pembayaran. Peserta dengan surat delegasi
+status delegasi, bukan kategori pembayaran. Peserta dengan surat delegasi dari
+Regional MPJ wajib memilih asal regional. Peserta dengan surat delegasi dari
+komunitas atau lembaga lain wajib mengisi nama komunitas/lembaga. Keduanya
 mendapat tarif gelombang otomatis berdasarkan tanggal WIB: Gelombang 1 sebelum
 15 Juni 2026, Gelombang 2 pada 15–25 Juni 2026, dan Gelombang 3 / OTS mulai
 26 Juni 2026. Peserta tanpa surat delegasi otomatis memakai kategori Peserta
@@ -76,13 +78,14 @@ Malang.
 ## Smoke Test Produksi
 
 1. Buka landing page dan `/daftar` dari domain produksi.
-2. Uji flow delegasi dengan surat delegasi dan bukti pembayaran berformat PDF,
-   JPG, atau PNG.
-3. Uji flow tanpa surat delegasi dan pastikan kategori otomatis menjadi Peserta
+2. Uji flow surat delegasi Regional MPJ dengan regional resmi, surat delegasi,
+   dan bukti pembayaran berformat PDF, JPG, atau PNG.
+3. Uji flow surat delegasi komunitas/lembaga lain dengan nama pemberi delegasi.
+4. Uji flow tanpa surat delegasi dan pastikan kategori otomatis menjadi Peserta
    Umum.
-4. Pastikan form redirect ke `/sukses` dan menampilkan ID pendaftaran.
-5. Pastikan data masuk ke tab `REGISTRATIONS` di Google Sheets.
-6. Pastikan file delegasi hanya masuk ke folder Google Drive `Surat Delegasi`
+5. Pastikan form redirect ke `/sukses` dan menampilkan ID pendaftaran.
+6. Pastikan data masuk ke tab `REGISTRATIONS` di Google Sheets.
+7. Pastikan file delegasi hanya masuk ke folder Google Drive `Surat Delegasi`
    jika diunggah, dan bukti pembayaran masuk ke folder
    `Bukti Pembayaran`.
-7. Submit ulang nomor WhatsApp yang sama dan pastikan throttle 10 menit tampil.
+8. Submit ulang nomor WhatsApp yang sama dan pastikan throttle 10 menit tampil.
