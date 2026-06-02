@@ -20,11 +20,13 @@ import {
 } from "@/lib/registration";
 import {
   PAYMENT_CONFIG,
+  REGIONAL_OPTIONS,
   calculatePaymentSummary,
   formatPaymentUniqueCode,
   formatRupiah,
+  getLegacyDelegationStatus,
   isPaymentConfigReady,
-  type DelegationStatus,
+  type DelegationType,
 } from "@/lib/payment";
 import { JUKNIS_URL } from "@/lib/links";
 
@@ -54,7 +56,9 @@ type FormState = {
   link_karya: string;
   surat_delegasi_file: File | null;
   bukti_pembayaran_file: File | null;
-  delegation_status: DelegationStatus | "";
+  delegation_type: DelegationType | "";
+  regional: string;
+  community_name: string;
   agreement: boolean;
   website: string;
 };
@@ -76,7 +80,9 @@ const initial: FormState = {
   link_karya: "",
   surat_delegasi_file: null,
   bukti_pembayaran_file: null,
-  delegation_status: "",
+  delegation_type: "",
+  regional: "",
+  community_name: "",
   agreement: false,
   website: "",
 };
@@ -109,16 +115,27 @@ function DaftarPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
-  const paymentDetails = calculatePaymentSummary(data.delegation_status, data.whatsapp);
+  const paymentDetails = calculatePaymentSummary(data.delegation_type, data.whatsapp);
   const paymentConfigReady = isPaymentConfigReady();
 
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) => {
-    setData((d) => ({
-      ...d,
-      [k]: v,
-      ...(k === "delegation_status" && v === "NO_DELEGATION" ? { surat_delegasi_file: null } : {}),
+    setData((d) => {
+      const next = { ...d, [k]: v };
+      if (k !== "delegation_type") return next;
+      if (v === "MPJ_REGIONAL") return { ...next, community_name: "" };
+      if (v === "OTHER_COMMUNITY") return { ...next, regional: "" };
+      if (v === "NO_DELEGATION") {
+        return { ...next, regional: "", community_name: "", surat_delegasi_file: null };
+      }
+      return next;
+    });
+    setErrors((e) => ({
+      ...e,
+      [k]: "",
+      ...(k === "delegation_type"
+        ? { regional: "", community_name: "", surat_delegasi_file: "" }
+        : {}),
     }));
-    setErrors((e) => ({ ...e, [k]: "" }));
   };
 
   function validateStep(s: number): boolean {
@@ -143,14 +160,23 @@ function DaftarPage() {
     if (s === 3) {
       if (!data.link_karya.trim() || !isUrl(data.link_karya))
         e.link_karya = "Harus berupa URL valid";
-      if (!data.delegation_status) e.delegation_status = "Pilih status surat delegasi";
+      if (!data.delegation_type) e.delegation_type = "Pilih status delegasi";
+      if (data.delegation_type === "MPJ_REGIONAL") {
+        if (!data.regional) e.regional = "Pilih asal regional";
+        else if (!REGIONAL_OPTIONS.includes(data.regional as (typeof REGIONAL_OPTIONS)[number])) {
+          e.regional = "Asal regional tidak valid";
+        }
+      }
+      if (data.delegation_type === "OTHER_COMMUNITY" && !data.community_name.trim()) {
+        e.community_name = "Nama komunitas/lembaga wajib diisi";
+      }
       if (!paymentConfigReady) e.payment_config = "Informasi rekening belum tersedia";
       if (paymentDetails && paymentDetails.totalAmount <= paymentDetails.tier.amount)
-        e.delegation_status = "Nominal pembayaran tidak valid";
+        e.delegation_type = "Nominal pembayaran tidak valid";
       const suratDelegasiError = validateUpload(
         data.surat_delegasi_file,
         "Surat delegasi",
-        data.delegation_status === "HAS_DELEGATION",
+        data.delegation_type === "MPJ_REGIONAL" || data.delegation_type === "OTHER_COMMUNITY",
       );
       const buktiPembayaranError = validateUpload(data.bukti_pembayaran_file, "Bukti pembayaran");
       if (suratDelegasiError) e.surat_delegasi_file = suratDelegasiError;
@@ -192,7 +218,11 @@ function DaftarPage() {
         kendala_produksi: data.kendala_produksi.trim(),
         motivasi: data.motivasi.trim(),
         link_karya: data.link_karya.trim(),
-        delegation_status: data.delegation_status as DelegationStatus,
+        delegation_type: data.delegation_type as DelegationType,
+        regional: data.delegation_type === "MPJ_REGIONAL" ? data.regional : "",
+        community_name:
+          data.delegation_type === "OTHER_COMMUNITY" ? data.community_name.trim() : "",
+        delegation_status: getLegacyDelegationStatus(data.delegation_type as DelegationType),
         surat_delegasi_file: surat,
         bukti_pembayaran_file: bukti,
         agreement: data.agreement,
@@ -211,7 +241,9 @@ function DaftarPage() {
       });
       rememberSuccessfulRegistration({
         registrationId: res.registration_id,
-        delegationStatus: data.delegation_status as DelegationStatus,
+        delegationType: data.delegation_type as DelegationType,
+        regional: data.delegation_type === "MPJ_REGIONAL" ? data.regional : "",
+        communityName: data.delegation_type === "OTHER_COMMUNITY" ? data.community_name.trim() : "",
         paymentTier: paymentDetails.tier.id,
         paymentTotalAmount: paymentDetails.totalAmount,
         paymentStatus: "WAITING_ADMIN_APPROVAL",
@@ -458,28 +490,63 @@ function DaftarPage() {
                       placeholder="https://..."
                     />
                   </Field>
-                  <Field label="Dokumen Delegasi" error={errors.delegation_status}>
+                  <Field label="Status Delegasi" error={errors.delegation_type}>
                     <div className="grid gap-2">
                       <RadioCard
-                        label="Saya memiliki surat delegasi dari pesantren/media pondok"
-                        checked={data.delegation_status === "HAS_DELEGATION"}
-                        onChange={() => update("delegation_status", "HAS_DELEGATION")}
+                        label="Saya memiliki surat delegasi dari Pesantren (MPJ)"
+                        checked={data.delegation_type === "MPJ_REGIONAL"}
+                        onChange={() => update("delegation_type", "MPJ_REGIONAL")}
+                      />
+                      <RadioCard
+                        label="Saya memiliki surat delegasi dari komunitas media pesantren"
+                        checked={data.delegation_type === "OTHER_COMMUNITY"}
+                        onChange={() => update("delegation_type", "OTHER_COMMUNITY")}
                       />
                       <RadioCard
                         label="Saya tidak memiliki surat delegasi"
-                        checked={data.delegation_status === "NO_DELEGATION"}
-                        onChange={() => update("delegation_status", "NO_DELEGATION")}
+                        checked={data.delegation_type === "NO_DELEGATION"}
+                        onChange={() => update("delegation_type", "NO_DELEGATION")}
                       />
                     </div>
-                    <p className="mt-2 text-xs text-muted-foreground leading-relaxed">
-                      Surat delegasi digunakan untuk menentukan kategori biaya pendaftaran. Jika
-                      tidak memiliki surat delegasi, pendaftaran tetap dapat dilanjutkan dengan
-                      kategori Peserta Umum.
-                    </p>
                   </Field>
-                  {data.delegation_status === "HAS_DELEGATION" && (
+                  {data.delegation_type === "MPJ_REGIONAL" && (
+                    <Field
+                      label="Asal Regional"
+                      error={errors.regional}
+                      hint="Wajib untuk peserta dengan surat delegasi dari Regional MPJ."
+                    >
+                      <select
+                        className={inputCls(errors.regional)}
+                        value={data.regional}
+                        onChange={(e) => update("regional", e.target.value)}
+                      >
+                        <option value="">Pilih asal regional</option>
+                        {REGIONAL_OPTIONS.map((regional) => (
+                          <option key={regional} value={regional}>
+                            {regional}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  )}
+                  {data.delegation_type === "OTHER_COMMUNITY" && (
+                    <Field
+                      label="Nama Komunitas/Lembaga"
+                      error={errors.community_name}
+                      hint="Isi nama komunitas, lembaga, atau instansi yang memberikan surat delegasi."
+                    >
+                      <input
+                        className={inputCls(errors.community_name)}
+                        value={data.community_name}
+                        onChange={(e) => update("community_name", e.target.value)}
+                        placeholder="Contoh: Media Pondok Jawa Tengah"
+                      />
+                    </Field>
+                  )}
+                  {(data.delegation_type === "MPJ_REGIONAL" ||
+                    data.delegation_type === "OTHER_COMMUNITY") && (
                     <FileField
-                      label="Surat delegasi dari media/pesantren"
+                      label="Surat delegasi"
                       hint="Wajib diunggah. Format: PDF, JPG, atau PNG"
                       file={data.surat_delegasi_file}
                       onChange={(f) => update("surat_delegasi_file", f)}
@@ -487,7 +554,7 @@ function DaftarPage() {
                       accept=".pdf,.jpg,.jpeg,.png"
                     />
                   )}
-                  {data.delegation_status === "NO_DELEGATION" && (
+                  {data.delegation_type === "NO_DELEGATION" && (
                     <p className="rounded-xl bg-secondary p-3 text-sm text-muted-foreground">
                       Tidak masalah. Jika tidak memiliki surat delegasi, pendaftaran tetap dapat
                       dilanjutkan dengan kategori Peserta Umum.
@@ -496,7 +563,9 @@ function DaftarPage() {
                   <PaymentCard
                     paymentConfigReady={paymentConfigReady}
                     paymentDetails={paymentDetails}
-                    delegationStatus={data.delegation_status}
+                    delegationType={data.delegation_type}
+                    regional={data.regional}
+                    communityName={data.community_name}
                     copied={copied}
                     onCopy={copyPaymentValue}
                   />
@@ -601,13 +670,17 @@ function DaftarPage() {
 function PaymentCard({
   paymentConfigReady,
   paymentDetails,
-  delegationStatus,
+  delegationType,
+  regional,
+  communityName,
   copied,
   onCopy,
 }: {
   paymentConfigReady: boolean;
   paymentDetails: ReturnType<typeof calculatePaymentSummary>;
-  delegationStatus: DelegationStatus | "";
+  delegationType: DelegationType | "";
+  regional: string;
+  communityName: string;
   copied: string | null;
   onCopy: (label: string, value: string) => void;
 }) {
@@ -617,11 +690,6 @@ function PaymentCard({
       <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
         Silakan transfer sesuai nominal total berikut. Tiga angka terakhir merupakan kode unik untuk
         memudahkan validasi pembayaran oleh panitia.
-      </p>
-      <p className="mt-1.5 text-xs text-muted-foreground leading-relaxed">
-        Gelombang pendaftaran otomatis mengikuti tanggal pendaftaran berdasarkan waktu Indonesia
-        Barat. Untuk peserta tanpa surat delegasi, kategori pembayaran otomatis menjadi Peserta
-        Umum.
       </p>
 
       {!paymentConfigReady ? (
@@ -636,18 +704,29 @@ function PaymentCard({
       ) : (
         <div className="mt-4 grid gap-2 text-sm">
           <PaymentRow
-            label="Status Dokumen Delegasi"
+            label="Status Delegasi"
             value={
-              delegationStatus === "HAS_DELEGATION"
-                ? "Memiliki surat delegasi"
-                : delegationStatus === "NO_DELEGATION"
-                  ? "Tidak memiliki surat delegasi"
-                  : "Pilih status dokumen dahulu"
+              delegationType === "MPJ_REGIONAL"
+                ? "Dari Regional MPJ"
+                : delegationType === "OTHER_COMMUNITY"
+                  ? "Dari komunitas/lembaga lain"
+                  : delegationType === "NO_DELEGATION"
+                    ? "Tidak memiliki surat delegasi"
+                    : "Pilih status delegasi dahulu"
             }
           />
+          {delegationType === "MPJ_REGIONAL" && (
+            <PaymentRow label="Asal Regional" value={regional || "Pilih asal regional"} />
+          )}
+          {delegationType === "OTHER_COMMUNITY" && (
+            <PaymentRow
+              label="Komunitas/Lembaga"
+              value={communityName.trim() || "Isi nama komunitas/lembaga"}
+            />
+          )}
           <PaymentRow
             label="Kategori"
-            value={paymentDetails?.tier.label ?? "Pilih status dokumen dahulu"}
+            value={paymentDetails?.tier.label ?? "Pilih status delegasi dahulu"}
           />
           <PaymentRow
             label="Biaya Pendaftaran"
