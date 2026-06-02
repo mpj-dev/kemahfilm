@@ -3,7 +3,7 @@ const THROTTLE_SECONDS = 10 * 60;
 const EVENT_YEAR = "2026";
 const SHEET_NAME = "REGISTRATIONS";
 const WAITING_PAYMENT_STATUS = "WAITING_ADMIN_APPROVAL";
-// TEST_PAYMENT_DATE hanya untuk testing dan harus dikosongkan sebelum produksi.
+// TEST_PAYMENT_DATE hanya untuk testing dan wajib dikosongkan sebelum produksi.
 const TEST_PAYMENT_DATE = "";
 
 const PAYMENT_TIERS = {
@@ -14,6 +14,25 @@ const PAYMENT_TIERS = {
 };
 
 const ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png"];
+
+const REGIONAL_OPTIONS = [
+  "Regional Dapil IV",
+  "Regional Situbondo-Bondowoso",
+  "Regional SidoPas",
+  "Regional Banyuwangi",
+  "Regional Malang Raya",
+  "Regional Blitar",
+  "Regional Ojo Lamban",
+  "Regional Jombang",
+  "Regional Kediri",
+  "Regional Nganjuk",
+  "Regional Plat AE",
+  "Regional Madura",
+  "Regional Tulungagung-Trenggalek",
+  "Regional Mojokerto",
+  "Regional Probolinggo",
+  "Regional SBY-GRESIK",
+];
 
 const HEADERS = [
   "timestamp",
@@ -49,6 +68,9 @@ const HEADERS = [
   "payment_reviewed_by",
   "official_participant_id",
   "delegation_status",
+  "delegation_type",
+  "regional",
+  "community_name",
 ];
 
 function onOpen() {
@@ -253,6 +275,9 @@ function doPost(event) {
         payment_reviewed_by: "",
         official_participant_id: "",
         delegation_status: registration.delegation_status,
+        delegation_type: registration.delegation_type,
+        regional: registration.regional,
+        community_name: registration.community_name,
       });
     } finally {
       lock.releaseLock();
@@ -438,10 +463,33 @@ function validatePayload(payload) {
     throw new Error("Persetujuan peserta wajib diberikan.");
   }
 
-  const delegationStatus = validateDelegationStatus(payload.delegation_status);
-  const payment = validatePayment(payload, whatsapp, delegationStatus);
+  const delegationType = validateDelegationType(payload.delegation_type);
+  const delegationStatus = getLegacyDelegationStatus(delegationType);
+  const regional = normalizeOptionalText(payload.regional);
+  const communityName = normalizeOptionalText(payload.community_name);
 
-  if (delegationStatus === "HAS_DELEGATION" || payload.surat_delegasi_file) {
+  if (delegationType === "MPJ_REGIONAL" && !regional) {
+    throw new Error("Asal regional wajib dipilih untuk peserta dari Pesantren (MPJ).");
+  }
+
+  if (regional && REGIONAL_OPTIONS.indexOf(regional) === -1) {
+    throw new Error("Asal regional tidak valid.");
+  }
+
+  if (delegationType === "OTHER_COMMUNITY" && !communityName) {
+    throw new Error("Nama komunitas media pesantren wajib diisi.");
+  }
+
+  const hasRequiredDelegationFile =
+    delegationType === "MPJ_REGIONAL" || delegationType === "OTHER_COMMUNITY";
+
+  if (hasRequiredDelegationFile && !payload.surat_delegasi_file) {
+    throw new Error("Surat delegasi wajib diunggah.");
+  }
+
+  const payment = validatePayment(payload, whatsapp, delegationType);
+
+  if (payload.surat_delegasi_file) {
     validateFile(payload.surat_delegasi_file);
   }
   validateFile(payload.bukti_pembayaran_file);
@@ -458,6 +506,9 @@ function validatePayload(payload) {
     motivasi: payload.motivasi.trim(),
     link_karya: payload.link_karya.trim(),
     delegation_status: delegationStatus,
+    delegation_type: delegationType,
+    regional,
+    community_name: communityName,
     surat_delegasi_file: payload.surat_delegasi_file,
     bukti_pembayaran_file: payload.bukti_pembayaran_file,
     agreement: true,
@@ -474,15 +525,23 @@ function validatePayload(payload) {
   };
 }
 
-function validateDelegationStatus(value) {
-  const status = typeof value === "string" ? value.trim() : "";
-  if (status !== "HAS_DELEGATION" && status !== "NO_DELEGATION") {
-    throw new Error("Status surat delegasi tidak valid.");
+function validateDelegationType(value) {
+  const type = typeof value === "string" ? value.trim() : "";
+  if (type !== "MPJ_REGIONAL" && type !== "OTHER_COMMUNITY" && type !== "NO_DELEGATION") {
+    throw new Error("Status delegasi tidak valid.");
   }
-  return status;
+  return type;
 }
 
-function validatePayment(payload, whatsapp, delegationStatus) {
+function getLegacyDelegationStatus(delegationType) {
+  return delegationType === "NO_DELEGATION" ? "NO_DELEGATION" : "HAS_DELEGATION";
+}
+
+function normalizeOptionalText(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function validatePayment(payload, whatsapp, delegationType) {
   const tier = typeof payload.payment_tier === "string" ? payload.payment_tier.trim() : "";
   const baseAmount = Number(payload.payment_base_amount);
   const uniqueCode = Number(payload.payment_unique_code);
@@ -491,7 +550,7 @@ function validatePayment(payload, whatsapp, delegationStatus) {
   const accountNumber = validatePaymentAccountValue(payload.payment_account_number);
   const accountHolder = validatePaymentAccountValue(payload.payment_account_holder);
 
-  const expectedTier = getCurrentPaymentTier(delegationStatus);
+  const expectedTier = getCurrentPaymentTier(delegationType);
 
   if (tier !== expectedTier) {
     throw new Error("Kategori pembayaran tidak valid.");
@@ -528,8 +587,8 @@ function validatePayment(payload, whatsapp, delegationStatus) {
   };
 }
 
-function getCurrentPaymentTier(delegationStatus) {
-  if (delegationStatus === "NO_DELEGATION") return "GENERAL";
+function getCurrentPaymentTier(delegationType) {
+  if (delegationType === "NO_DELEGATION") return "GENERAL";
 
   const jakartaDate = getJakartaPaymentDate();
   if (jakartaDate >= "2026-06-26") return "WAVE_3_OTS";

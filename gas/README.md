@@ -15,17 +15,31 @@ dan menambahkan satu baris ke Google Sheets.
 6. Masukkan URL deployment `/exec` ke `VITE_GAS_ENDPOINT`.
 
 Setiap file dibatasi maksimum 5 MB dan hanya menerima PDF, JPG, atau PNG.
-Surat delegasi wajib untuk peserta delegasi dan opsional untuk Peserta Umum.
 Nomor WhatsApp yang sama hanya dapat mengirim satu kali dalam 10 menit.
+
+## Status Delegasi
+
+Backend memakai `delegation_type` sebagai sumber kebenaran:
+
+- `MPJ_REGIONAL`: peserta dari Pesantren/Regional MPJ. Field `regional` wajib
+  diisi dari daftar regional resmi dan `surat_delegasi_file` wajib diunggah.
+- `OTHER_COMMUNITY`: peserta dari komunitas media pesantren lain. Field
+  `community_name` dan `surat_delegasi_file` wajib diisi.
+- `NO_DELEGATION`: peserta umum. Field `regional`, `community_name`, dan
+  `surat_delegasi_file` tidak wajib.
+
+Header `delegation_status` lama tetap disimpan untuk kompatibilitas data lama,
+tetapi tidak lagi menjadi sumber validasi submission baru.
 
 ## Validasi Pembayaran
 
-Frontend mengirim status delegasi, snapshot rekening, kategori biaya, kode unik,
-dan total transfer. GAS menghitung ulang kategori dan nominal sebelum menyimpan
-data. Peserta dengan surat delegasi mendapat tarif gelombang otomatis berdasarkan
+Frontend mengirim `delegation_type`, snapshot rekening, kategori biaya, kode
+unik, dan total transfer. GAS menghitung ulang kategori dan nominal sebelum
+menyimpan data. Peserta `MPJ_REGIONAL` dan `OTHER_COMMUNITY` mendapat tarif
+gelombang otomatis berdasarkan
 tanggal WIB: Gelombang 1 sebelum 15 Juni 2026, Gelombang 2 pada 15–25 Juni 2026,
-dan Gelombang 3 / OTS mulai 26 Juni 2026. Peserta tanpa surat delegasi otomatis
-memakai kategori Peserta Umum.
+dan Gelombang 3 / OTS mulai 26 Juni 2026. Peserta `NO_DELEGATION` otomatis
+memakai kategori Peserta Umum `Rp1.000.000`.
 
 Kode unik berasal dari tiga digit terakhir WhatsApp peserta. Jika hasilnya
 `000`, kode diubah menjadi `111`.
@@ -33,6 +47,15 @@ Kode unik berasal dari tiga digit terakhir WhatsApp peserta. Jika hasilnya
 Untuk menguji validasi backend pada tanggal tertentu, isi `TEST_PAYMENT_DATE`
 di `Code.gs` dengan format `YYYY-MM-DD`, misalnya `"2026-06-10"`. Kosongkan
 kembali konstanta tersebut sebelum deploy produksi.
+
+## Update Deployment
+
+Setelah memperbarui backend:
+
+1. Salin `Code.gs` terbaru ke editor Apps Script.
+2. Pastikan `TEST_PAYMENT_DATE = ""`.
+3. Klik `Save`.
+4. Pilih `Deploy > Manage deployments > Edit > New version > Deploy`.
 
 Peserta baru berstatus resmi setelah pembayaran disetujui admin. Jalankan helper
 berikut dari editor Apps Script:
