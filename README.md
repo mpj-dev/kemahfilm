@@ -79,9 +79,9 @@ Malang.
 
 Section Mentor Kemah Film menggunakan foto lokal berikut:
 
-- `src/assets/mentor-danial-rifki.webp.jpeg`
-- `src/assets/mentor-agoes-sam.webp.jpeg`
-- `src/assets/mentor-bisri-mustafa.webp.jpeg`
+- `src/assets/mentor-danial-rifki.jpeg`
+- `src/assets/mentor-agoes-sam.jpeg`
+- `src/assets/mentor-bisri-mustafa.jpeg`
 
 Gunakan foto resmi mentor yang sudah mendapat izin publikasi.
 

@@ -20,9 +20,9 @@ import {
 } from "lucide-react";
 import logo from "@/assets/logo-mpj-landscape-putih.png";
 import heroImg from "@/assets/hero-kemah.jpg";
-import mentorAgoesSam from "@/assets/mentor-agoes-sam.webp.jpeg";
-import mentorBisriMustafa from "@/assets/mentor-bisri-mustafa.webp.jpeg";
-import mentorDanialRifki from "@/assets/mentor-danial-rifki.webp.jpeg";
+import mentorAgoesSam from "@/assets/mentor-agoes-sam.jpeg";
+import mentorBisriMustafa from "@/assets/mentor-bisri-mustafa.jpeg";
+import mentorDanialRifki from "@/assets/mentor-danial-rifki.jpeg";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Section } from "@/components/site/Section";

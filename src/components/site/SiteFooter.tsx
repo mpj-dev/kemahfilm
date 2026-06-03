@@ -16,7 +16,8 @@ export function SiteFooter() {
             />
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-primary-foreground/80">
-            Ruang belajar, produksi, dan kolaborasi film bagi sineas santri pegiat media pondok pesantren Nusantara.
+            Ruang belajar, produksi, dan kolaborasi film bagi sineas santri pegiat media pondok
+            pesantren Nusantara.
           </p>
         </div>
         <div>
