@@ -16,9 +16,13 @@ import {
   Scissors,
   MessageCircle,
   ArrowRight,
+  Instagram,
 } from "lucide-react";
 import logo from "@/assets/logo-mpj-landscape-putih.png";
 import heroImg from "@/assets/hero-kemah.jpg";
+import mentorAgoesSam from "@/assets/mentor-agoes-sam.webp.jpeg";
+import mentorBisriMustafa from "@/assets/mentor-bisri-mustafa.webp.jpeg";
+import mentorDanialRifki from "@/assets/mentor-danial-rifki.webp.jpeg";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Section } from "@/components/site/Section";
@@ -82,6 +86,33 @@ const kelas = [
     icon: Sparkles,
     title: "Review Karya & Sharing Session",
     desc: "Kurasi karya bersama mentor dan peserta.",
+  },
+];
+
+const mentors = [
+  {
+    name: "Danial Rifki",
+    field: "Penulisan Script dan Penyutradaraan",
+    bio: "Sutradara dan penulis skenario film Indonesia dengan karya bertema sosial, keluarga, dan nilai kemanusiaan. Lulusan Institut Kesenian Jakarta (IKJ).",
+    instagram: "https://www.instagram.com/danialrifki?igsh=MWZvYXZkZG9teG1ieg==",
+    image: mentorDanialRifki,
+    badges: ["Scriptwriting", "Penyutradaraan"],
+  },
+  {
+    name: "Agoes Sam",
+    field: "Teknik Shooting dan Editing",
+    bio: "Pegiat sinema dan penggagas Festival Film Santri (FFS), yang berfokus pada pengembangan sinema berbasis nilai keislaman dan dunia pesantren.",
+    instagram: "https://www.instagram.com/agoessam?igsh=Z2J1cXFhMHN1MmU0",
+    image: mentorAgoesSam,
+    badges: ["Shooting", "Editing", "Sinema Pesantren"],
+  },
+  {
+    name: "M. Bisri Mustafa",
+    field: "Teknik Shooting dan Editing",
+    bio: "Produser dan Project Manager dengan pengalaman lebih dari 8 tahun di industri kreatif, khususnya produksi video dan film.",
+    instagram: "https://www.instagram.com/bisrigarang?igsh=cmxqYmZkamNpdmth",
+    image: mentorBisriMustafa,
+    badges: ["Produksi", "Project Management", "Editing"],
   },
 ];
 
@@ -325,6 +356,68 @@ function LandingPage() {
               <h3 className="font-bold text-lg text-primary-dark">{k.title}</h3>
               <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">{k.desc}</p>
             </motion.div>
+          ))}
+        </div>
+      </Section>
+
+      {/* MENTOR */}
+      <Section
+        id="mentor"
+        eyebrow="Mentor"
+        title="Mentor Kemah Film"
+        description="Peserta akan belajar dan didampingi oleh mentor dalam proses ide, produksi, hingga review karya."
+        className="bg-secondary/30"
+      >
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {mentors.map((mentor, i) => (
+            <motion.article
+              key={mentor.name}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: i * 0.06 }}
+              className="group overflow-hidden rounded-3xl border border-border/40 bg-card shadow-card transition-all hover:-translate-y-1 hover:border-primary/40"
+            >
+              <div className="relative aspect-[4/5] overflow-hidden bg-gradient-hero">
+                <img
+                  src={mentor.image}
+                  alt={mentor.name}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary-dark/85 via-primary-dark/10 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <p className="inline-flex rounded-full bg-accent px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
+                    Mentor
+                  </p>
+                  <h3 className="mt-3 text-2xl font-extrabold text-primary-foreground">
+                    {mentor.name}
+                  </h3>
+                </div>
+              </div>
+              <div className="p-6">
+                <p className="text-sm font-semibold text-primary">{mentor.field}</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{mentor.bio}</p>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {mentor.badges.map((badge) => (
+                    <span
+                      key={badge}
+                      className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-dark"
+                    >
+                      {badge}
+                    </span>
+                  ))}
+                </div>
+                <a
+                  href={mentor.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full border border-primary/20 bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary-dark"
+                >
+                  <Instagram className="h-4 w-4" /> Lihat Instagram
+                </a>
+              </div>
+            </motion.article>
           ))}
         </div>
       </Section>

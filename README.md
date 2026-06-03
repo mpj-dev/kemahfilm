@@ -75,6 +75,16 @@ Header menggunakan `src/assets/logo-kemahfilm.png`. Hero organizer dan footer
 menggunakan `src/assets/logo-mpj-landscape-putih.png` tanpa label Regional
 Malang.
 
+## Asset Mentor
+
+Section Mentor Kemah Film menggunakan foto lokal berikut:
+
+- `src/assets/mentor-danial-rifki.webp.jpeg`
+- `src/assets/mentor-agoes-sam.webp.jpeg`
+- `src/assets/mentor-bisri-mustafa.webp.jpeg`
+
+Gunakan foto resmi mentor yang sudah mendapat izin publikasi.
+
 ## Smoke Test Produksi
 
 1. Buka landing page dan `/daftar` dari domain produksi.
