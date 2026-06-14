@@ -10,6 +10,7 @@ import {
   AlertCircle,
   Copy,
   AlertTriangle,
+  ExternalLink,
 } from "lucide-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
@@ -28,7 +29,7 @@ import {
   isPaymentConfigReady,
   type DelegationType,
 } from "@/lib/payment";
-import { JUKNIS_URL } from "@/lib/links";
+import { DELEGATION_TEMPLATE_URL, JUKNIS_URL } from "@/lib/links";
 
 export const Route = createFileRoute("/daftar")({
   head: () => ({
@@ -547,6 +548,18 @@ function DaftarPage() {
                     data.delegation_type === "OTHER_COMMUNITY") && (
                     <FileField
                       label="Surat delegasi"
+                      helper="Gunakan template resmi agar format surat delegasi sesuai ketentuan."
+                      action={
+                        <a
+                          href={DELEGATION_TEMPLATE_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-primary transition hover:text-primary-dark hover:underline"
+                        >
+                          Lihat Template Surat Delegasi
+                          <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      }
                       hint="Wajib diunggah. Format: PDF, JPG, atau PNG"
                       file={data.surat_delegasi_file}
                       onChange={(f) => update("surat_delegasi_file", f)}
@@ -878,6 +891,8 @@ function RadioCard({
 
 function FileField({
   label,
+  helper,
+  action,
   hint,
   file,
   onChange,
@@ -885,6 +900,8 @@ function FileField({
   accept,
 }: {
   label: string;
+  helper?: string;
+  action?: React.ReactNode;
   hint?: string;
   file: File | null;
   error?: string;
@@ -896,6 +913,12 @@ function FileField({
       <label className="block text-sm font-semibold text-foreground mb-1.5">
         {label} <span className="text-destructive">*</span>
       </label>
+      {(helper || action) && (
+        <div className="mb-2 space-y-1">
+          {helper && <p className="text-xs text-muted-foreground">{helper}</p>}
+          {action}
+        </div>
+      )}
       <label
         className={`flex items-center gap-3 rounded-xl border-2 border-dashed bg-secondary/40 px-4 py-4 cursor-pointer hover:bg-secondary transition ${error ? "border-destructive/60" : "border-border"}`}
       >
