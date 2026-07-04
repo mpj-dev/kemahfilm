@@ -5,11 +5,14 @@ const SHEET_NAME = "REGISTRATIONS";
 const WAITING_PAYMENT_STATUS = "WAITING_ADMIN_APPROVAL";
 // TEST_PAYMENT_DATE hanya untuk testing dan wajib dikosongkan sebelum produksi.
 const TEST_PAYMENT_DATE = "";
+const REGISTRATION_START_DATE = "2026-07-01";
+const WAVE_1_END_DATE = "2026-07-31";
+const WAVE_2_START_DATE = "2026-08-01";
+const REGISTRATION_END_DATE = "2026-08-25";
 
 const PAYMENT_TIERS = {
   WAVE_1: 285000,
   WAVE_2: 335000,
-  WAVE_3_OTS: 400000,
   GENERAL: 1000000,
 };
 
@@ -552,6 +555,10 @@ function validatePayment(payload, whatsapp, delegationType) {
 
   const expectedTier = getCurrentPaymentTier(delegationType);
 
+  if (!expectedTier) {
+    throw new Error("Pendaftaran Ditutup.");
+  }
+
   if (tier !== expectedTier) {
     throw new Error("Kategori pembayaran tidak valid.");
   }
@@ -588,12 +595,18 @@ function validatePayment(payload, whatsapp, delegationType) {
 }
 
 function getCurrentPaymentTier(delegationType) {
+  const jakartaDate = getJakartaPaymentDate();
+
+  if (jakartaDate < REGISTRATION_START_DATE || jakartaDate > REGISTRATION_END_DATE) {
+    return "";
+  }
+
   if (delegationType === "NO_DELEGATION") return "GENERAL";
 
-  const jakartaDate = getJakartaPaymentDate();
-  if (jakartaDate >= "2026-06-26") return "WAVE_3_OTS";
-  if (jakartaDate >= "2026-06-15") return "WAVE_2";
-  return "WAVE_1";
+  if (jakartaDate >= WAVE_2_START_DATE) return "WAVE_2";
+  if (jakartaDate <= WAVE_1_END_DATE) return "WAVE_1";
+
+  return "";
 }
 
 function getJakartaPaymentDate() {

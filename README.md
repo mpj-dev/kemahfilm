@@ -54,10 +54,10 @@ Form memblokir submit selama placeholder tersebut belum diganti. Peserta memilih
 status delegasi, bukan kategori pembayaran. Peserta dengan surat delegasi dari
 Regional MPJ wajib memilih asal regional. Peserta dengan surat delegasi dari
 komunitas atau lembaga lain wajib mengisi nama komunitas/lembaga. Keduanya
-mendapat tarif gelombang otomatis berdasarkan tanggal WIB: Gelombang 1 sebelum
-15 Juni 2026, Gelombang 2 pada 15–25 Juni 2026, dan Gelombang 3 / OTS mulai
-26 Juni 2026. Peserta tanpa surat delegasi otomatis memakai kategori Peserta
-Umum `Rp1.000.000`.
+mendapat tarif gelombang otomatis berdasarkan tanggal WIB: Gelombang 1 pada
+1–31 Juli 2026 dan Gelombang 2 pada 1–25 Agustus 2026. Setelah 25 Agustus 2026,
+pendaftaran ditutup. Peserta tanpa surat delegasi otomatis memakai kategori
+Peserta Umum `Rp1.000.000` selama pendaftaran masih dibuka.
 
 Nominal transfer terdiri dari biaya kategori dan kode unik tiga digit terakhir
 WhatsApp peserta. Nomor WhatsApp berawalan `08` dinormalisasi menjadi `628`.

@@ -27,7 +27,7 @@ import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { Section } from "@/components/site/Section";
 import { JUKNIS_URL } from "@/lib/links";
-import { PAYMENT_CONFIG } from "@/lib/payment";
+import { EVENT_SCHEDULE, PAYMENT_CONFIG, getRegistrationStatus } from "@/lib/payment";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,8 +35,7 @@ export const Route = createFileRoute("/")({
       { title: "Kemah Film MPJ 2026 | Media Pondok Jawa Timur" },
       {
         name: "description",
-        content:
-          "Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur. 3–5 Juli 2026 di Benjor Pine Camping Ground, Malang.",
+        content: `Pendaftaran resmi Kemah Film MPJ 2026, program pelatihan dan produksi film bagi pegiat media pondok Jawa Timur. ${EVENT_SCHEDULE.eventDateLabel} di Benjor Pine Camping Ground, Malang.`,
       },
       { property: "og:title", content: "Kemah Film MPJ 2026" },
       {
@@ -139,21 +138,14 @@ const biaya = [
     label: "Gelombang 1",
     badge: "Paling Hemat",
     price: "285.000",
-    note: "1–14 Juni 2026",
+    note: EVENT_SCHEDULE.wave1Label,
     variant: "highlight",
   },
   {
     label: "Gelombang 2",
     badge: "Reguler",
     price: "335.000",
-    note: "15–25 Juni 2026",
-    variant: "default",
-  },
-  {
-    label: "Gelombang 3 / OTS",
-    badge: "Periode Terakhir",
-    price: "400.000",
-    note: "Setelah 25 Juni 2026",
+    note: EVENT_SCHEDULE.wave2Label,
     variant: "default",
   },
   {
@@ -166,12 +158,12 @@ const biaya = [
 ];
 
 const timeline = [
-  { date: "1–14 Juni 2026", title: "Pendaftaran Gelombang 1" },
-  { date: "15–25 Juni 2026", title: "Pendaftaran Gelombang 2" },
-  { date: "26 Juni 2026", title: "Wawancara Peserta Tertentu" },
-  { date: "27 Juni 2026", title: "Pembagian Kelompok" },
-  { date: "28 Juni 2026", title: "Technical Meeting" },
-  { date: "3–5 Juli 2026", title: "Pelaksanaan Kemah Film" },
+  { date: EVENT_SCHEDULE.wave1Label, title: "Pendaftaran Gelombang 1" },
+  { date: EVENT_SCHEDULE.wave2Label, title: "Pendaftaran Gelombang 2" },
+  { date: "Akan diumumkan", title: "Wawancara Peserta Tertentu" },
+  { date: "Akan diumumkan", title: "Pembagian Kelompok" },
+  { date: "Akan diumumkan", title: "Technical Meeting" },
+  { date: EVENT_SCHEDULE.eventDateLabel, title: "Pelaksanaan Kemah Film" },
 ];
 
 const faqs = [
@@ -210,6 +202,8 @@ const faqs = [
 ];
 
 function LandingPage() {
+  const registrationStatus = getRegistrationStatus();
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -232,7 +226,7 @@ function LandingPage() {
             transition={{ duration: 0.5, delay: 0.05 }}
             className="inline-flex items-center gap-2 rounded-full bg-accent/15 border border-accent/30 px-3 py-1 text-xs font-medium text-accent backdrop-blur"
           >
-            <Clapperboard className="h-3.5 w-3.5" /> Pendaftaran Dibuka — Gelombang 1
+            <Clapperboard className="h-3.5 w-3.5" /> {registrationStatus.label}
           </motion.span>
 
           <motion.h1
@@ -266,7 +260,7 @@ function LandingPage() {
             className="mt-7 flex flex-wrap gap-4 text-sm"
           >
             <div className="flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-4 py-2 backdrop-blur">
-              <Calendar className="h-4 w-4 text-accent" /> 3–5 Juli 2026
+              <Calendar className="h-4 w-4 text-accent" /> {EVENT_SCHEDULE.eventDateLabel}
             </div>
             <div className="flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-4 py-2 backdrop-blur">
               <MapPin className="h-4 w-4 text-accent" /> Benjor Pine Camping Ground, Tumpang —
@@ -459,7 +453,7 @@ function LandingPage() {
         title="Biaya Pendaftaran"
         description="Biaya mengikuti periode pendaftaran dan status surat delegasi. Daftar lebih awal untuk mendapatkan biaya paling hemat."
       >
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {biaya.map((b, i) => (
             <motion.div
               key={b.label}

@@ -112,7 +112,7 @@ function SuksesPage() {
                       Kategori Pembayaran
                     </p>
                     <p className="mt-1 font-semibold text-primary-dark">
-                      {getPaymentTier(registration.paymentTier)?.label}
+                      {getPaymentTier(registration.paymentTier)?.label ?? "Kategori tidak berlaku"}
                     </p>
                   </>
                 )}

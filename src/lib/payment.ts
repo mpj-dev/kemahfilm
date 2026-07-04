@@ -10,9 +10,18 @@ export const PAYMENT_CONFIG = {
 export const PAYMENT_TIERS = [
   { id: "WAVE_1", label: "Gelombang 1", amount: 285_000 },
   { id: "WAVE_2", label: "Gelombang 2", amount: 335_000 },
-  { id: "WAVE_3_OTS", label: "Gelombang 3 / OTS", amount: 400_000 },
   { id: "GENERAL", label: "Peserta Umum", amount: 1_000_000 },
 ] as const;
+
+export const EVENT_SCHEDULE = {
+  eventDateLabel: "4–6 September 2026",
+  wave1Label: "1–31 Juli 2026",
+  wave2Label: "1–25 Agustus 2026",
+  registrationStart: "2026-07-01",
+  wave1End: "2026-07-31",
+  wave2Start: "2026-08-01",
+  registrationEnd: "2026-08-25",
+} as const;
 
 export const REGIONAL_OPTIONS = [
   "Regional Dapil IV",
@@ -74,22 +83,52 @@ export function getLegacyDelegationStatus(delegationType: DelegationType): Deleg
   return delegationType === "NO_DELEGATION" ? "NO_DELEGATION" : "HAS_DELEGATION";
 }
 
-export function getCurrentPaymentTier(delegationType: DelegationType, date = new Date()) {
-  if (delegationType === "NO_DELEGATION") return getPaymentTier("GENERAL");
-
-  const jakartaDate = new Intl.DateTimeFormat("en-CA", {
+export function getJakartaDate(date = new Date()) {
+  return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Jakarta",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   }).format(date);
-  if (jakartaDate >= "2026-06-26") return getPaymentTier("WAVE_3_OTS");
-  if (jakartaDate >= "2026-06-15") return getPaymentTier("WAVE_2");
-  return getPaymentTier("WAVE_1");
+}
+
+export function getRegistrationStatus(date = new Date()) {
+  const jakartaDate = getJakartaDate(date);
+
+  if (jakartaDate < EVENT_SCHEDULE.registrationStart) {
+    return { status: "UPCOMING", label: "Pendaftaran Segera Dibuka" } as const;
+  }
+  if (jakartaDate <= EVENT_SCHEDULE.wave1End) {
+    return { status: "OPEN", label: "Pendaftaran Dibuka - Gelombang 1" } as const;
+  }
+  if (jakartaDate >= EVENT_SCHEDULE.wave2Start && jakartaDate <= EVENT_SCHEDULE.registrationEnd) {
+    return { status: "OPEN", label: "Pendaftaran Dibuka - Gelombang 2" } as const;
+  }
+  return { status: "CLOSED", label: "Pendaftaran Ditutup" } as const;
+}
+
+export function getCurrentPaymentTier(delegationType: DelegationType, date = new Date()) {
+  const jakartaDate = getJakartaDate(date);
+  if (
+    jakartaDate < EVENT_SCHEDULE.registrationStart ||
+    jakartaDate > EVENT_SCHEDULE.registrationEnd
+  ) {
+    return undefined;
+  }
+  if (delegationType === "NO_DELEGATION") return getPaymentTier("GENERAL");
+
+  if (jakartaDate >= EVENT_SCHEDULE.wave2Start && jakartaDate <= EVENT_SCHEDULE.registrationEnd) {
+    return getPaymentTier("WAVE_2");
+  }
+  if (jakartaDate >= EVENT_SCHEDULE.registrationStart && jakartaDate <= EVENT_SCHEDULE.wave1End) {
+    return getPaymentTier("WAVE_1");
+  }
+  return undefined;
 }
 
 export function calculatePaymentSummary(delegationType: DelegationType | "", whatsapp: string) {
   if (!delegationType) return undefined;
+  if (getRegistrationStatus().status === "CLOSED") return undefined;
   const tier = getCurrentPaymentTier(delegationType);
   if (!tier) return undefined;
   const uniqueCode = createPaymentUniqueCode(whatsapp);

@@ -37,15 +37,15 @@ Frontend mengirim `delegation_type`, snapshot rekening, kategori biaya, kode
 unik, dan total transfer. GAS menghitung ulang kategori dan nominal sebelum
 menyimpan data. Peserta `MPJ_REGIONAL` dan `OTHER_COMMUNITY` mendapat tarif
 gelombang otomatis berdasarkan
-tanggal WIB: Gelombang 1 sebelum 15 Juni 2026, Gelombang 2 pada 15–25 Juni 2026,
-dan Gelombang 3 / OTS mulai 26 Juni 2026. Peserta `NO_DELEGATION` otomatis
-memakai kategori Peserta Umum `Rp1.000.000`.
+tanggal WIB: Gelombang 1 pada 1–31 Juli 2026 dan Gelombang 2 pada 1–25 Agustus 2026. Setelah 25 Agustus 2026, pendaftaran ditutup. Peserta `NO_DELEGATION`
+otomatis memakai kategori Peserta Umum `Rp1.000.000` selama pendaftaran masih
+dibuka.
 
 Kode unik berasal dari tiga digit terakhir WhatsApp peserta. Jika hasilnya
 `000`, kode diubah menjadi `111`.
 
 Untuk menguji validasi backend pada tanggal tertentu, isi `TEST_PAYMENT_DATE`
-di `Code.gs` dengan format `YYYY-MM-DD`, misalnya `"2026-06-10"`. Kosongkan
+di `Code.gs` dengan format `YYYY-MM-DD`, misalnya `"2026-07-10"`. Kosongkan
 kembali konstanta tersebut sebelum deploy produksi.
 
 ## Update Deployment

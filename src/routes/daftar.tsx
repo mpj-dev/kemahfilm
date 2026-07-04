@@ -26,6 +26,7 @@ import {
   formatPaymentUniqueCode,
   formatRupiah,
   getLegacyDelegationStatus,
+  getRegistrationStatus,
   isPaymentConfigReady,
   type DelegationType,
 } from "@/lib/payment";
@@ -116,6 +117,7 @@ function DaftarPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const registrationStatus = getRegistrationStatus();
   const paymentDetails = calculatePaymentSummary(data.delegation_type, data.whatsapp);
   const paymentConfigReady = isPaymentConfigReady();
 
@@ -172,6 +174,9 @@ function DaftarPage() {
         e.community_name = "Nama komunitas/lembaga wajib diisi";
       }
       if (!paymentConfigReady) e.payment_config = "Informasi rekening belum tersedia";
+      if (registrationStatus.status === "CLOSED") {
+        e.payment_config = "Pendaftaran Ditutup";
+      }
       if (paymentDetails && paymentDetails.totalAmount <= paymentDetails.tier.amount)
         e.delegation_type = "Nominal pembayaran tidak valid";
       const suratDelegasiError = validateUpload(
@@ -194,7 +199,7 @@ function DaftarPage() {
 
   async function handleSubmit() {
     if (!validateStep(4)) return;
-    if (!paymentDetails || !paymentConfigReady) {
+    if (!paymentDetails || !paymentConfigReady || registrationStatus.status === "CLOSED") {
       setStep(3);
       validateStep(3);
       return;
@@ -576,6 +581,7 @@ function DaftarPage() {
                   <PaymentCard
                     paymentConfigReady={paymentConfigReady}
                     paymentDetails={paymentDetails}
+                    registrationStatus={registrationStatus}
                     delegationType={data.delegation_type}
                     regional={data.regional}
                     communityName={data.community_name}
@@ -683,6 +689,7 @@ function DaftarPage() {
 function PaymentCard({
   paymentConfigReady,
   paymentDetails,
+  registrationStatus,
   delegationType,
   regional,
   communityName,
@@ -691,6 +698,7 @@ function PaymentCard({
 }: {
   paymentConfigReady: boolean;
   paymentDetails: ReturnType<typeof calculatePaymentSummary>;
+  registrationStatus: ReturnType<typeof getRegistrationStatus>;
   delegationType: DelegationType | "";
   regional: string;
   communityName: string;
@@ -705,7 +713,12 @@ function PaymentCard({
         memudahkan validasi pembayaran oleh panitia.
       </p>
 
-      {!paymentConfigReady ? (
+      {registrationStatus.status === "CLOSED" ? (
+        <div className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive flex gap-2">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>Pendaftaran Ditutup. Periode pendaftaran berakhir pada 25 Agustus 2026.</span>
+        </div>
+      ) : !paymentConfigReady ? (
         <div className="mt-4 rounded-xl border border-accent/40 bg-accent/10 p-3 text-sm text-foreground flex gap-2">
           <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-accent" />
           <span>
