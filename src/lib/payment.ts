@@ -10,17 +10,19 @@ export const PAYMENT_CONFIG = {
 export const PAYMENT_TIERS = [
   { id: "WAVE_1", label: "Gelombang 1", amount: 285_000 },
   { id: "WAVE_2", label: "Gelombang 2", amount: 335_000 },
+  { id: "WAVE_3", label: "Gelombang 3", amount: 400_000 },
   { id: "GENERAL", label: "Peserta Umum", amount: 1_000_000 },
 ] as const;
 
 export const EVENT_SCHEDULE = {
   eventDateLabel: "4–6 September 2026",
-  wave1Label: "1–31 Juli 2026",
-  wave2Label: "1–25 Agustus 2026",
+  wave1Label: "1 Juli – 15 Agustus 2026",
+  wave2Label: "16–30 Agustus 2026",
+  wave3Label: "OTS / Romli",
   registrationStart: "2026-07-01",
-  wave1End: "2026-07-31",
-  wave2Start: "2026-08-01",
-  registrationEnd: "2026-08-25",
+  wave1End: "2026-08-15",
+  wave2Start: "2026-08-16",
+  wave2End: "2026-08-30",
 } as const;
 
 export const REGIONAL_OPTIONS = [
@@ -101,23 +103,23 @@ export function getRegistrationStatus(date = new Date()) {
   if (jakartaDate <= EVENT_SCHEDULE.wave1End) {
     return { status: "OPEN", label: "Pendaftaran Dibuka - Gelombang 1" } as const;
   }
-  if (jakartaDate >= EVENT_SCHEDULE.wave2Start && jakartaDate <= EVENT_SCHEDULE.registrationEnd) {
+  if (jakartaDate >= EVENT_SCHEDULE.wave2Start && jakartaDate <= EVENT_SCHEDULE.wave2End) {
     return { status: "OPEN", label: "Pendaftaran Dibuka - Gelombang 2" } as const;
   }
-  return { status: "CLOSED", label: "Pendaftaran Ditutup" } as const;
+  return { status: "OPEN", label: "Pendaftaran Dibuka - Gelombang 3" } as const;
 }
 
 export function getCurrentPaymentTier(delegationType: DelegationType, date = new Date()) {
   const jakartaDate = getJakartaDate(date);
-  if (
-    jakartaDate < EVENT_SCHEDULE.registrationStart ||
-    jakartaDate > EVENT_SCHEDULE.registrationEnd
-  ) {
+  if (jakartaDate < EVENT_SCHEDULE.registrationStart) {
     return undefined;
   }
   if (delegationType === "NO_DELEGATION") return getPaymentTier("GENERAL");
 
-  if (jakartaDate >= EVENT_SCHEDULE.wave2Start && jakartaDate <= EVENT_SCHEDULE.registrationEnd) {
+  if (jakartaDate > EVENT_SCHEDULE.wave2End) {
+    return getPaymentTier("WAVE_3");
+  }
+  if (jakartaDate >= EVENT_SCHEDULE.wave2Start && jakartaDate <= EVENT_SCHEDULE.wave2End) {
     return getPaymentTier("WAVE_2");
   }
   if (jakartaDate >= EVENT_SCHEDULE.registrationStart && jakartaDate <= EVENT_SCHEDULE.wave1End) {
@@ -128,7 +130,6 @@ export function getCurrentPaymentTier(delegationType: DelegationType, date = new
 
 export function calculatePaymentSummary(delegationType: DelegationType | "", whatsapp: string) {
   if (!delegationType) return undefined;
-  if (getRegistrationStatus().status === "CLOSED") return undefined;
   const tier = getCurrentPaymentTier(delegationType);
   if (!tier) return undefined;
   const uniqueCode = createPaymentUniqueCode(whatsapp);

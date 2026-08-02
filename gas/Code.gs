@@ -6,13 +6,14 @@ const WAITING_PAYMENT_STATUS = "WAITING_ADMIN_APPROVAL";
 // TEST_PAYMENT_DATE hanya untuk testing dan wajib dikosongkan sebelum produksi.
 const TEST_PAYMENT_DATE = "";
 const REGISTRATION_START_DATE = "2026-07-01";
-const WAVE_1_END_DATE = "2026-07-31";
-const WAVE_2_START_DATE = "2026-08-01";
-const REGISTRATION_END_DATE = "2026-08-25";
+const WAVE_1_END_DATE = "2026-08-15";
+const WAVE_2_START_DATE = "2026-08-16";
+const WAVE_2_END_DATE = "2026-08-30";
 
 const PAYMENT_TIERS = {
   WAVE_1: 285000,
   WAVE_2: 335000,
+  WAVE_3: 400000,
   GENERAL: 1000000,
 };
 
@@ -123,9 +124,7 @@ function rejectSelectedPayment() {
       return;
     }
 
-    const result = JSON.parse(
-      rejectPayment(selected.registrationId, getActiveAdminName(), reason),
-    );
+    const result = JSON.parse(rejectPayment(selected.registrationId, getActiveAdminName(), reason));
 
     ui.alert(
       "Pembayaran Berhasil Ditolak",
@@ -556,7 +555,7 @@ function validatePayment(payload, whatsapp, delegationType) {
   const expectedTier = getCurrentPaymentTier(delegationType);
 
   if (!expectedTier) {
-    throw new Error("Pendaftaran Ditutup.");
+    throw new Error("Pendaftaran belum dibuka.");
   }
 
   if (tier !== expectedTier) {
@@ -597,12 +596,13 @@ function validatePayment(payload, whatsapp, delegationType) {
 function getCurrentPaymentTier(delegationType) {
   const jakartaDate = getJakartaPaymentDate();
 
-  if (jakartaDate < REGISTRATION_START_DATE || jakartaDate > REGISTRATION_END_DATE) {
+  if (jakartaDate < REGISTRATION_START_DATE) {
     return "";
   }
 
   if (delegationType === "NO_DELEGATION") return "GENERAL";
 
+  if (jakartaDate > WAVE_2_END_DATE) return "WAVE_3";
   if (jakartaDate >= WAVE_2_START_DATE) return "WAVE_2";
   if (jakartaDate <= WAVE_1_END_DATE) return "WAVE_1";
 

@@ -149,7 +149,14 @@ const biaya = [
     variant: "default",
   },
   {
-    label: "Peserta Umum",
+    label: "Gelombang 3",
+    badge: "OTS / Romli",
+    price: "400.000",
+    note: EVENT_SCHEDULE.wave3Label,
+    variant: "default",
+  },
+  {
+    label: "Umum / Peserta Umum",
     badge: "Tanpa Surat Delegasi",
     price: "1.000.000",
     description: "Untuk pendaftar yang tidak memiliki surat delegasi dari pesantren/media pondok.",
@@ -160,6 +167,7 @@ const biaya = [
 const timeline = [
   { date: EVENT_SCHEDULE.wave1Label, title: "Pendaftaran Gelombang 1" },
   { date: EVENT_SCHEDULE.wave2Label, title: "Pendaftaran Gelombang 2" },
+  { date: EVENT_SCHEDULE.wave3Label, title: "Pendaftaran Gelombang 3" },
   { date: "Akan diumumkan", title: "Wawancara Peserta Tertentu" },
   { date: "Akan diumumkan", title: "Pembagian Kelompok" },
   { date: "Akan diumumkan", title: "Technical Meeting" },
@@ -453,7 +461,7 @@ function LandingPage() {
         title="Biaya Pendaftaran"
         description="Biaya mengikuti periode pendaftaran dan status surat delegasi. Daftar lebih awal untuk mendapatkan biaya paling hemat."
       >
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {biaya.map((b, i) => (
             <motion.div
               key={b.label}

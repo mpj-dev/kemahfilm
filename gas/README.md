@@ -37,9 +37,10 @@ Frontend mengirim `delegation_type`, snapshot rekening, kategori biaya, kode
 unik, dan total transfer. GAS menghitung ulang kategori dan nominal sebelum
 menyimpan data. Peserta `MPJ_REGIONAL` dan `OTHER_COMMUNITY` mendapat tarif
 gelombang otomatis berdasarkan
-tanggal WIB: Gelombang 1 pada 1–31 Juli 2026 dan Gelombang 2 pada 1–25 Agustus 2026. Setelah 25 Agustus 2026, pendaftaran ditutup. Peserta `NO_DELEGATION`
-otomatis memakai kategori Peserta Umum `Rp1.000.000` selama pendaftaran masih
-dibuka.
+tanggal WIB: Gelombang 1 pada 1 Juli – 15 Agustus 2026, Gelombang 2 pada
+16–30 Agustus 2026, dan Gelombang 3 setelah 30 Agustus 2026 dengan label OTS /
+Romli. Peserta `NO_DELEGATION` otomatis memakai kategori Peserta Umum
+`Rp1.000.000`.
 
 Kode unik berasal dari tiga digit terakhir WhatsApp peserta. Jika hasilnya
 `000`, kode diubah menjadi `111`.
